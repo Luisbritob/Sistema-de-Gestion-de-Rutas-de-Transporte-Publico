@@ -6,7 +6,7 @@ public class Rutas {
    private double costo;
    private boolean transbordo;
    
-   public Ruta(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, boolean transbordo) {
+   public Rutas(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, boolean transbordo) {
       this.origen = origen;
       this.destino = destino;
       this.tiempo = tiempo;
