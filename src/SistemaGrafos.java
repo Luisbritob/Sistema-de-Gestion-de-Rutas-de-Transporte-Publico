@@ -38,4 +38,39 @@ public class SistemaGrafos {
    public Map<Paradas, List<Rutas>> getGrafo() {
       return grafo;
    }
+
+   public void eliminarRuta(Paradas origen, Paradas destino) {
+
+      if (!grafo.containsKey(origen)) {
+         System.out.println("Error: la parada de origen no existe.");
+         return;
+      }
+
+      List<Rutas> rutas = grafo.get(origen);
+
+      boolean eliminada = rutas.removeIf(r -> r.getDestino().equals(destino));
+
+      if (eliminada) {
+         System.out.println("Ruta eliminada correctamente.");
+      } else {
+         System.out.println("No existe una ruta entre esas paradas.");
+      }
+   }
+
+   public void eliminarParada(Paradas parada) {
+
+      if (!grafo.containsKey(parada)) {
+         System.out.println("Error: la parada no existe.");
+         return;
+      }
+
+      grafo.remove(parada);
+
+      for (List<Rutas> rutas : grafo.values()) {
+         rutas.removeIf(r -> r.getDestino().equals(parada));
+      }
+
+      System.out.println("Parada eliminada correctamente.");
+   }
+
 }
