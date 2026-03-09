@@ -36,7 +36,24 @@ public class Rutas {
    }
    
    public boolean isTransbordo() {
+      
       return transbordo;
+   }
+   
+   public void setTiempo(double tiempo) {
+      this.tiempo = tiempo;
+   }
+   
+   public void setDistancia(double distancia) {
+      this.distancia = distancia;
+   }
+   
+   public void setCosto(double costo) {
+      this.costo = costo;
+   }
+   
+   public void setTransbordo(boolean transbordo) {
+      this.transbordo = transbordo;
    }
    
    @Override
@@ -50,4 +67,8 @@ public class Rutas {
               ", transbordo=" + transbordo +
               '}';
    }
+   
+
+   
 }
+

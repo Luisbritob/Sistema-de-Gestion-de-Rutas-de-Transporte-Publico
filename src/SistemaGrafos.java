@@ -26,6 +26,30 @@ public class SistemaGrafos {
       }
    }
    
+   public void modificarRuta(Paradas origen, Paradas destino, double nuevoTiempo, double nuevaDistancia, double nuevoCosto, boolean nuevoTransbordo) {
+      if (!grafo.containsKey(origen)) {
+         System.out.println("Error: la parada de origen no existe.");
+         return;
+      }
+      
+      List<Rutas> rutas = grafo.get(origen);
+      
+      for (Rutas ruta : rutas) {
+         if (ruta.getDestino().equals(destino)) {
+            ruta.setTiempo(nuevoTiempo);
+            ruta.setDistancia(nuevaDistancia);
+            ruta.setCosto(nuevoCosto);
+            ruta.setTransbordo(nuevoTransbordo);
+            
+            System.out.println("Ruta modificada correctamente.");
+            return;
+         }
+      }
+      
+      System.out.println("Error: no existe una ruta desde "
+              + origen.getNombre() + " hasta " + destino.getNombre() + ".");
+   }
+   
    public void mostrarGrafo() {
       for (Paradas parada : grafo.keySet()) {
          System.out.println("Desde " + parada.getNombre() + ":");
