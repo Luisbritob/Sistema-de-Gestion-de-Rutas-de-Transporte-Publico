@@ -67,8 +67,19 @@ public class Rutas {
               ", transbordo=" + transbordo +
               '}';
    }
-   
 
+   public double getPesoSegunCriterio(CriterioRuta criterio) {
+      switch (criterio) {
+         case TIEMPO:
+            return tiempo;
+         case DISTANCIA:
+            return distancia;
+         case COSTO:
+            return costo;
+         default:
+            return tiempo;
+      }
+   }
    
 }
 

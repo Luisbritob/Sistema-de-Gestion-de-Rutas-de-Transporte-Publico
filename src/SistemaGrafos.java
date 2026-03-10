@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.*;
 
 public class SistemaGrafos {
    
@@ -176,9 +177,103 @@ public class SistemaGrafos {
    public Map<Paradas, List<Rutas>> getGrafo() {
       return grafo;
    }
-   
-  
-   
-  
+
+   public List<Paradas> calcularMejorRuta(Paradas origen, Paradas destino, CriterioRuta criterio) {
+      if (origen == null || destino == null) {
+         System.out.println("Error: origen o destino no pueden ser null.");
+         return new ArrayList<>();
+      }
+
+      if (!grafo.containsKey(origen) || !grafo.containsKey(destino)) {
+         System.out.println("Error: origen o destino no existen en el sistema.");
+         return new ArrayList<>();
+      }
+
+      Map<Paradas, Double> distancias = new HashMap<>();
+      Map<Paradas, Paradas> anteriores = new HashMap<>();
+      PriorityQueue<Paradas> cola = new PriorityQueue<>(Comparator.comparingDouble(distancias::get));
+
+      for (Paradas parada : grafo.keySet()) {
+         distancias.put(parada, Double.MAX_VALUE);
+      }
+
+      distancias.put(origen, 0.0);
+      cola.add(origen);
+
+      while (!cola.isEmpty()) {
+         Paradas actual = cola.poll();
+
+         if (actual.equals(destino)) {
+            break;
+         }
+
+         for (Rutas ruta : grafo.get(actual)) {
+            Paradas vecino = ruta.getDestino();
+            double nuevoPeso = distancias.get(actual) + ruta.getPesoSegunCriterio(criterio);
+
+            if (nuevoPeso < distancias.get(vecino)) {
+               distancias.put(vecino, nuevoPeso);
+               anteriores.put(vecino, actual);
+
+               cola.remove(vecino);
+               cola.add(vecino);
+            }
+         }
+      }
+
+      List<Paradas> camino = new ArrayList<>();
+      if (!anteriores.containsKey(destino) && !origen.equals(destino)) {
+         return camino;
+      }
+
+      for (Paradas at = destino; at != null; at = anteriores.get(at)) {
+         camino.add(0, at);
+      }
+
+      return camino;
+   }
+
+   public String obtenerResumenRuta(List<Paradas> camino) {
+      if (camino == null || camino.isEmpty()) {
+         return "No se encontró una ruta.";
+      }
+
+      double tiempoTotal = 0;
+      double distanciaTotal = 0;
+      double costoTotal = 0;
+      boolean huboTransbordo = false;
+
+      StringBuilder rutaTexto = new StringBuilder();
+
+      for (int i = 0; i < camino.size(); i++) {
+         rutaTexto.append(camino.get(i).getNombre());
+         if (i < camino.size() - 1) {
+            rutaTexto.append(" -> ");
+         }
+      }
+
+      for (int i = 0; i < camino.size() - 1; i++) {
+         Paradas origen = camino.get(i);
+         Paradas destino = camino.get(i + 1);
+
+         for (Rutas ruta : grafo.get(origen)) {
+            if (ruta.getDestino().equals(destino)) {
+               tiempoTotal += ruta.getTiempo();
+               distanciaTotal += ruta.getDistancia();
+               costoTotal += ruta.getCosto();
+               if (ruta.isTransbordo()) {
+                  huboTransbordo = true;
+               }
+               break;
+            }
+         }
+      }
+
+      return "Ruta: " + rutaTexto + "\n" +
+              "Tiempo total: " + tiempoTotal + "\n" +
+              "Distancia total: " + distanciaTotal + "\n" +
+              "Costo total: " + costoTotal + "\n" +
+              "Transbordo: " + (huboTransbordo ? "Sí" : "No");
+   }
 
 }
