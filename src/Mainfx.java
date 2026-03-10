@@ -10,7 +10,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
 import java.util.List;
 
 public class Mainfx extends Application {
@@ -24,16 +23,13 @@ public class Mainfx extends Application {
    @Override
    public void start(Stage stage) {
 
-      // Inicializar con algunos datos de ejemplo
       inicializarDatosEjemplo();
 
-      // Fondo principal
       VBox root = new VBox(30);
       root.setAlignment(Pos.TOP_CENTER);
       root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;"); // Blue Fog
+      root.setStyle("-fx-background-color: #A7B3BF;");
 
-      // ===== LOGO =====
       ImageView logoView;
       try {
          Image logo = new Image("logo.png");
@@ -55,10 +51,7 @@ public class Mainfx extends Application {
          root.getChildren().add(logoPlaceholder);
       }
 
-      // ===== PANEL DE BOTONES PRINCIPALES =====
       root.getChildren().add(crearPanelBotones());
-
-      // ===== PANEL DE BÚSQUEDA DE RUTAS =====
       root.getChildren().add(crearPanelBusquedaRutas());
 
       Scene scene = new Scene(root, 1000, 800);
@@ -70,25 +63,18 @@ public class Mainfx extends Application {
    private GridPane crearPanelBotones() {
       Button btnAgregarParada = crearBoton("Agregar parada");
       Button btnAgregarRuta = crearBoton("Agregar ruta");
-
       Button btnModificarParada = crearBoton("Modificar parada");
       Button btnModificarRuta = crearBoton("Modificar ruta");
-
       Button btnEliminarParada = crearBoton("Eliminar parada");
       Button btnEliminarRuta = crearBoton("Eliminar ruta");
-
       Button btnVerGrafo = crearBoton("Ver grafo");
 
-      // Eventos
       btnAgregarParada.setOnAction(e -> mostrarVentanaAgregarParada());
       btnAgregarRuta.setOnAction(e -> mostrarVentanaAgregarRuta());
-
       btnModificarParada.setOnAction(e -> mostrarVentanaModificarParada());
       btnModificarRuta.setOnAction(e -> mostrarVentanaModificarRuta());
-
       btnEliminarParada.setOnAction(e -> mostrarVentanaEliminarParada());
       btnEliminarRuta.setOnAction(e -> mostrarVentanaEliminarRuta());
-
       btnVerGrafo.setOnAction(e -> mostrarVentanaVerGrafo());
 
       GridPane grid = new GridPane();
@@ -98,13 +84,10 @@ public class Mainfx extends Application {
 
       grid.add(btnAgregarParada, 0, 0);
       grid.add(btnAgregarRuta, 1, 0);
-
       grid.add(btnModificarParada, 0, 1);
       grid.add(btnModificarRuta, 1, 1);
-
       grid.add(btnEliminarParada, 0, 2);
       grid.add(btnEliminarRuta, 1, 2);
-
       grid.add(btnVerGrafo, 0, 3, 2, 1);
       GridPane.setColumnSpan(btnVerGrafo, 2);
       btnVerGrafo.setPrefWidth(500);
@@ -211,8 +194,6 @@ public class Mainfx extends Application {
 
       return button;
    }
-
-   // ==================== VENTANAS DE AGREGAR ====================
 
    private void mostrarVentanaAgregarParada() {
       Stage ventana = new Stage();
@@ -370,8 +351,6 @@ public class Mainfx extends Application {
       ventana.show();
    }
 
-   // ==================== VENTANAS DE MODIFICAR ====================
-
    private void mostrarVentanaModificarParada() {
       if (listaParadas.isEmpty()) {
          mostrarAlerta("Error", "No hay paradas para modificar");
@@ -419,7 +398,7 @@ public class Mainfx extends Application {
          }
 
          sistema.modificarParada(seleccionada, nuevoNombre);
-         listaParadas.setAll(listaParadas); // Refrescar lista
+         listaParadas.setAll(listaParadas);
 
          mostrarAlerta("Éxito", "Parada modificada correctamente");
          ventana.close();
@@ -487,13 +466,10 @@ public class Mainfx extends Application {
             return;
          }
 
-         // Buscar la ruta para cargar sus datos
          List<Rutas> rutas = sistema.getGrafo().get(cmbOrigen.getValue());
          if (rutas != null) {
             for (Rutas ruta : rutas) {
                if (ruta.getDestino().equals(cmbDestino.getValue())) {
-                  // Cargar datos en los campos
-                  // Esto requeriría campos de texto adicionales
                   mostrarAlerta("Información", "Ruta encontrada. Proceda a modificar los valores.");
                   return;
                }
@@ -575,8 +551,6 @@ public class Mainfx extends Application {
       ventana.setScene(scene);
       ventana.show();
    }
-
-   // ==================== VENTANAS DE ELIMINAR ====================
 
    private void mostrarVentanaEliminarParada() {
       if (listaParadas.isEmpty()) {
@@ -710,8 +684,6 @@ public class Mainfx extends Application {
       ventana.show();
    }
 
-   // ==================== VENTANA VER GRAFO ====================
-
    private void mostrarVentanaVerGrafo() {
       Stage ventana = new Stage();
       ventana.setTitle("Visualización del Grafo");
@@ -726,7 +698,6 @@ public class Mainfx extends Application {
 
       TabPane tabPane = new TabPane();
 
-      // Tab de Paradas
       Tab tabParadas = new Tab("Paradas");
       tabParadas.setClosable(false);
 
@@ -746,7 +717,6 @@ public class Mainfx extends Application {
 
       tabParadas.setContent(tablaParadas);
 
-      // Tab de Rutas
       Tab tabRutas = new Tab("Rutas");
       tabRutas.setClosable(false);
 
@@ -799,8 +769,6 @@ public class Mainfx extends Application {
       ventana.show();
    }
 
-   // ==================== FUNCIÓN DE BÚSQUEDA ====================
-
    private void buscarRuta(Paradas origen, Paradas destino, CriterioRuta criterio) {
       AlgoritmosGrafos.RutaResultado resultado = null;
 
@@ -836,7 +804,6 @@ public class Mainfx extends Application {
       Label lblTitulo = new Label("RUTA ENCONTRADA");
       lblTitulo.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
 
-      // Mostrar el resultado usando el método imprimirRuta pero capturando en String
       TextArea txtResultado = new TextArea();
       txtResultado.setEditable(false);
       txtResultado.setPrefHeight(300);
@@ -871,31 +838,59 @@ public class Mainfx extends Application {
       ventana.show();
    }
 
-   // ==================== FUNCIONES AUXILIARES ====================
-
    private void inicializarDatosEjemplo() {
-      // Crear algunas paradas de ejemplo
-      Paradas p1 = new Paradas(nextIdParada++, "Centro");
-      Paradas p2 = new Paradas(nextIdParada++, "Estación Norte");
-      Paradas p3 = new Paradas(nextIdParada++, "Universidad");
-      Paradas p4 = new Paradas(nextIdParada++, "Hospital");
-      Paradas p5 = new Paradas(nextIdParada++, "Aeropuerto");
+      String[] nombresParadas = {
+              "Parque Central", "Catedral Santiago", "Monumento a los Héroes", "Universidad UTESA",
+              "Pontificia UCMM", "Hospital Regional José Cabral", "Plaza Internacional", "Estadio Cibao",
+              "Centro León", "Mercado Modelo", "Terminal de Autobuses", "Plaza Valerio",
+              "Avenida 27 de Febrero", "Reparto Peralta", "Villa Olímpica", "Los Jardines",
+              "Cerro de Quinigua", "La Barranquita", "Pueblo Nuevo", "Los Pepines",
+              "Ciudad Colonial", "Las Colinas", "La Trinitaria", "Urbanización Gurabo",
+              "Calle El Sol", "PUCMM", "Universidad Abierta UAPA", "Hospiten Santiago",
+              "Ágora Mall", "Gran Arena del Cibao"
+      };
 
-      sistema.agregarParada(p1);
-      sistema.agregarParada(p2);
-      sistema.agregarParada(p3);
-      sistema.agregarParada(p4);
-      sistema.agregarParada(p5);
+      Paradas[] paradas = new Paradas[30];
+      for (int i = 0; i < 30; i++) {
+         paradas[i] = new Paradas(nextIdParada++, nombresParadas[i]);
+         sistema.agregarParada(paradas[i]);
+         listaParadas.add(paradas[i]);
+      }
 
-      listaParadas.addAll(p1, p2, p3, p4, p5);
-
-      // Crear algunas rutas de ejemplo
-      sistema.agregarRuta(p1, p2, 15, 5.5, 2.5, false);
-      sistema.agregarRuta(p2, p3, 10, 3.2, 1.8, false);
-      sistema.agregarRuta(p1, p3, 30, 12.0, 5.0, true);
-      sistema.agregarRuta(p3, p4, 8, 2.1, 1.2, false);
-      sistema.agregarRuta(p4, p5, 25, 18.5, 8.5, false);
-      sistema.agregarRuta(p2, p5, 40, 25.0, 12.0, true);
+      sistema.agregarRuta(paradas[0], paradas[1], 5, 1.2, 0.8, false);
+      sistema.agregarRuta(paradas[1], paradas[2], 8, 2.5, 1.2, false);
+      sistema.agregarRuta(paradas[2], paradas[3], 10, 3.0, 1.5, true);
+      sistema.agregarRuta(paradas[3], paradas[4], 6, 1.8, 0.9, false);
+      sistema.agregarRuta(paradas[4], paradas[5], 4, 1.0, 0.6, false);
+      sistema.agregarRuta(paradas[5], paradas[6], 3, 0.8, 0.5, false);
+      sistema.agregarRuta(paradas[6], paradas[7], 7, 2.2, 1.1, true);
+      sistema.agregarRuta(paradas[7], paradas[8], 9, 3.5, 1.8, false);
+      sistema.agregarRuta(paradas[8], paradas[9], 5, 1.5, 0.7, false);
+      sistema.agregarRuta(paradas[9], paradas[10], 6, 2.0, 1.0, false);
+      sistema.agregarRuta(paradas[10], paradas[11], 12, 4.0, 2.2, true);
+      sistema.agregarRuta(paradas[11], paradas[12], 8, 2.8, 1.4, false);
+      sistema.agregarRuta(paradas[12], paradas[13], 5, 1.6, 0.8, false);
+      sistema.agregarRuta(paradas[13], paradas[14], 7, 2.3, 1.2, false);
+      sistema.agregarRuta(paradas[14], paradas[15], 4, 1.1, 0.6, false);
+      sistema.agregarRuta(paradas[15], paradas[16], 10, 3.2, 1.7, true);
+      sistema.agregarRuta(paradas[16], paradas[17], 8, 2.6, 1.3, false);
+      sistema.agregarRuta(paradas[17], paradas[18], 12, 4.5, 2.5, false);
+      sistema.agregarRuta(paradas[18], paradas[19], 15, 5.0, 3.0, true);
+      sistema.agregarRuta(paradas[19], paradas[20], 6, 1.9, 1.1, false);
+      sistema.agregarRuta(paradas[20], paradas[21], 8, 2.4, 1.4, false);
+      sistema.agregarRuta(paradas[21], paradas[22], 5, 1.3, 0.7, false);
+      sistema.agregarRuta(paradas[22], paradas[23], 7, 2.1, 1.2, true);
+      sistema.agregarRuta(paradas[23], paradas[24], 9, 3.3, 1.9, false);
+      sistema.agregarRuta(paradas[24], paradas[25], 11, 4.2, 2.3, false);
+      sistema.agregarRuta(paradas[25], paradas[26], 4, 1.0, 0.5, false);
+      sistema.agregarRuta(paradas[26], paradas[27], 6, 1.7, 0.9, false);
+      sistema.agregarRuta(paradas[27], paradas[28], 8, 2.5, 1.3, true);
+      sistema.agregarRuta(paradas[28], paradas[29], 10, 3.6, 2.0, false);
+      sistema.agregarRuta(paradas[0], paradas[15], 25, 8.0, 4.5, true);
+      sistema.agregarRuta(paradas[5], paradas[20], 18, 6.5, 3.2, true);
+      sistema.agregarRuta(paradas[10], paradas[25], 22, 7.8, 4.0, true);
+      sistema.agregarRuta(paradas[2], paradas[18], 20, 7.0, 3.5, true);
+      sistema.agregarRuta(paradas[8], paradas[22], 15, 5.2, 2.8, false);
 
       actualizarListaRutas();
    }
