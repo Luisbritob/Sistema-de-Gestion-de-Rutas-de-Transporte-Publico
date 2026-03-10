@@ -67,30 +67,14 @@ public class Mainfx extends Application {
          return;
       }
       
-      StackPane logoPane = new StackPane(logoView);
-      logoPane.setPadding(new Insets(10));
-      logoPane.setStyle(
-              "-fx-background-color: white;" +
-                      "-fx-border-color: #0F1C3F;" +
-                      "-fx-border-width: 4px;"
-      );
-      
-      // ===== NOMBRE EMPRESA =====
-      Label nombreEmpresa = new Label("ROUTEFINDER");
-      nombreEmpresa.setStyle(
-              "-fx-font-size: 28px;" +
-                      "-fx-font-weight: bold;" +
-                      "-fx-text-fill: #0F1C3F;" +   // Pantone 276 C aprox
-                      "-fx-background-color: white;" +
-                      "-fx-border-color: #0F1C3F;" +
-                      "-fx-border-width: 3px;" +
-                      "-fx-padding: 8 40 8 40;"
-      );
+      Image logo = new Image("logo.png");
+      logoView = new ImageView(logo);
+      logoView.setFitWidth(350); // logo más grande
+      logoView.setPreserveRatio(true);
       
       // ===== AGREGAR TODO =====
       root.getChildren().addAll(
-              logoPane,
-              nombreEmpresa,
+              logoView,
               crearPanelBotones()
       );
       
