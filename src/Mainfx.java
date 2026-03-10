@@ -839,18 +839,22 @@ public class Mainfx extends Application {
    }
 
    private void inicializarDatosEjemplo() {
+
       String[] nombresParadas = {
-              "Parque Central", "Catedral Santiago", "Monumento a los Héroes", "Universidad UTESA",
-              "Pontificia UCMM", "Hospital Regional José Cabral", "Plaza Internacional", "Estadio Cibao",
-              "Centro León", "Mercado Modelo", "Terminal de Autobuses", "Plaza Valerio",
-              "Avenida 27 de Febrero", "Reparto Peralta", "Villa Olímpica", "Los Jardines",
-              "Cerro de Quinigua", "La Barranquita", "Pueblo Nuevo", "Los Pepines",
-              "Ciudad Colonial", "Las Colinas", "La Trinitaria", "Urbanización Gurabo",
-              "Calle El Sol", "PUCMM", "Universidad Abierta UAPA", "Hospiten Santiago",
-              "Ágora Mall", "Gran Arena del Cibao"
+              "Parque Central", "Catedral Santiago", "Monumento a los Héroes", "UTESA",
+              "Pontificia UCMM", "Hospital Regional José Cabral", "Plaza Internacional",
+              "Estadio Cibao", "Centro León", "Mercado Modelo",
+              "Avenida Las Carreras", "Zona Universitaria", "Los Jardines",
+              "Villa Olga", "Ensanche Libertad", "Bella Vista",
+              "Pekín", "La Barranquita", "Cienfuegos",
+              "El Ejido", "La Zurza", "Hoya del Caimito",
+              "Don Pedro", "Gurabo", "Padre Las Casas",
+              "Villa González", "Tamboril", "Licey al Medio",
+              "Puñal", "Santiago Oeste"
       };
 
       Paradas[] paradas = new Paradas[30];
+
       for (int i = 0; i < 30; i++) {
          paradas[i] = new Paradas(nextIdParada++, nombresParadas[i]);
          sistema.agregarParada(paradas[i]);
@@ -886,6 +890,7 @@ public class Mainfx extends Application {
       sistema.agregarRuta(paradas[26], paradas[27], 6, 1.7, 0.9, false);
       sistema.agregarRuta(paradas[27], paradas[28], 8, 2.5, 1.3, true);
       sistema.agregarRuta(paradas[28], paradas[29], 10, 3.6, 2.0, false);
+
       sistema.agregarRuta(paradas[0], paradas[15], 25, 8.0, 4.5, true);
       sistema.agregarRuta(paradas[5], paradas[20], 18, 6.5, 3.2, true);
       sistema.agregarRuta(paradas[10], paradas[25], 22, 7.8, 4.0, true);
