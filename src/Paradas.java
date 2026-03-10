@@ -28,10 +28,10 @@ public class Paradas {
    }
    
    @Override
-   public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      Paradas parada = (Paradas) o;
+   public boolean equals(Object otroObjeto) {
+      if (this == otroObjeto) return true;
+      if (otroObjeto == null || getClass() != otroObjeto.getClass()) return false;
+      Paradas parada = (Paradas) otroObjeto;
       return id == parada.id;
    }
    

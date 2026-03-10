@@ -127,8 +127,8 @@ public class AlgoritmosGrafos {
         }
 
         @Override
-        public int compareTo(ParadaDistancia otro) {
-            return Double.compare(this.distancia, otro.distancia);
+        public int compareTo(ParadaDistancia otraParada) {
+            return Double.compare(this.distancia, otraParada.distancia);
         }
     }
 

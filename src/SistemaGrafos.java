@@ -226,8 +226,8 @@ public class SistemaGrafos {
          return camino;
       }
 
-      for (Paradas at = destino; at != null; at = anteriores.get(at)) {
-         camino.add(0, at);
+      for (Paradas paradaActual = destino; paradaActual != null; paradaActual = anteriores.get(paradaActual)) {
+         camino.add(0, paradaActual);
       }
 
       return camino;
