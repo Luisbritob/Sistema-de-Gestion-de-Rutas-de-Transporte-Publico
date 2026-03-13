@@ -91,32 +91,31 @@ public class MainController {
          listaRutas.addAll(sistema.getGrafo().get(parada));
       }
    }
-   
+
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
       Paradas destino = comboDestino.getValue();
       CriterioRuta criterio = comboCriterio.getValue();
-      
+
       if (origen == null || destino == null || criterio == null) {
          areaResultado.setText("Debes seleccionar origen, destino y criterio.");
          return;
       }
-      
+
       if (origen.equals(destino)) {
          areaResultado.setText("El origen y el destino no pueden ser la misma parada.");
          return;
       }
-      
-      var camino = sistema.calcularMejorRuta(origen, destino, criterio);
-      
-      if (camino.isEmpty()) {
-         areaResultado.setText("No se encontró una ruta entre " + origen.getNombre() + " y " + destino.getNombre() + ".");
+
+      AlgoritmosGrafos.RutaResultado resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
+
+      if (!resultado.isExitoso()) {
+         areaResultado.setText(resultado.getMensaje());
          return;
       }
-      
-      String resumen = sistema.obtenerResumenRuta(camino);
-      areaResultado.setText("Criterio: " + criterio + "\n\n" + resumen);
+
+      areaResultado.setText(resultado.obtenerResumen());
    }
    
    private void mostrarAlerta(String titulo, String mensaje) {

@@ -8,26 +8,23 @@ public class AlgoritmosGrafos {
         this.sistema = sistema;
     }
 
-    public RutaResultado dijkstraTiempo(Paradas origen, Paradas destino) {
-        return dijkstra(origen, destino, "tiempo");
-    }
+    public RutaResultado calcularMejorRuta(Paradas origen, Paradas destino, CriterioRuta criterio) {
+        if (origen == null || destino == null) {
+            return new RutaResultado(false, "Error: origen o destino no pueden ser null.");
+        }
 
-    public RutaResultado dijkstraDistancia(Paradas origen, Paradas destino) {
-        return dijkstra(origen, destino, "distancia");
-    }
+        Map<Paradas, List<Rutas>> grafo = sistema.getGrafo();
+        if (!grafo.containsKey(origen) || !grafo.containsKey(destino)) {
+            return new RutaResultado(false, "Error: origen o destino no existen en el sistema.");
+        }
 
-    public RutaResultado dijkstraCosto(Paradas origen, Paradas destino) {
-        return dijkstra(origen, destino, "costo");
-    }
-
-    private RutaResultado dijkstra(Paradas origen, Paradas destino, String criterio) {
         Map<Paradas, Double> distancias = new HashMap<>();
         Map<Paradas, Paradas> predecesores = new HashMap<>();
         Map<Paradas, Rutas> rutasUsadas = new HashMap<>();
         Set<Paradas> visitados = new HashSet<>();
         PriorityQueue<ParadaDistancia> cola = new PriorityQueue<>();
 
-        for (Paradas parada : sistema.getGrafo().keySet()) {
+        for (Paradas parada : grafo.keySet()) {
             distancias.put(parada, Double.MAX_VALUE);
         }
         distancias.put(origen, 0.0);
@@ -40,14 +37,13 @@ public class AlgoritmosGrafos {
             if (visitados.contains(paradaActual)) {
                 continue;
             }
-
             visitados.add(paradaActual);
 
             if (paradaActual.equals(destino)) {
                 break;
             }
 
-            List<Rutas> rutas = sistema.getGrafo().get(paradaActual);
+            List<Rutas> rutas = grafo.get(paradaActual);
             if (rutas != null) {
                 for (Rutas ruta : rutas) {
                     Paradas vecino = ruta.getDestino();
@@ -55,25 +51,15 @@ public class AlgoritmosGrafos {
                         continue;
                     }
 
-                    double peso = 0;
-                    switch (criterio) {
-                        case "tiempo":
-                            peso = ruta.getTiempo();
-                            break;
-                        case "distancia":
-                            peso = ruta.getDistancia();
-                            break;
-                        case "costo":
-                            peso = ruta.getCosto();
-                            break;
-                    }
-
+                    double peso = ruta.getPesoSegunCriterio(criterio);
                     double nuevaDistancia = distancias.get(paradaActual) + peso;
 
                     if (nuevaDistancia < distancias.get(vecino)) {
                         distancias.put(vecino, nuevaDistancia);
                         predecesores.put(vecino, paradaActual);
                         rutasUsadas.put(vecino, ruta);
+
+                        cola.remove(vecino);
                         cola.add(new ParadaDistancia(vecino, nuevaDistancia));
                     }
                 }
@@ -87,9 +73,9 @@ public class AlgoritmosGrafos {
                                              Map<Paradas, Paradas> predecesores,
                                              Map<Paradas, Rutas> rutasUsadas,
                                              Map<Paradas, Double> distancias,
-                                             String criterio) {
+                                             CriterioRuta criterio) {
         if (!distancias.containsKey(destino) || distancias.get(destino) == Double.MAX_VALUE) {
-            return new RutaResultado(false, "No hay ruta disponible entre las paradas especificadas");
+            return new RutaResultado(false, "No hay ruta disponible entre " + origen.getNombre() + " y " + destino.getNombre());
         }
 
         List<Paradas> rutaParadas = new ArrayList<>();
@@ -98,22 +84,24 @@ public class AlgoritmosGrafos {
         Paradas actual = destino;
         while (!actual.equals(origen)) {
             rutaParadas.add(0, actual);
+
             Rutas ruta = rutasUsadas.get(actual);
             if (ruta != null) {
                 rutaRutas.add(0, ruta);
             }
+
             actual = predecesores.get(actual);
             if (actual == null) {
-                return new RutaResultado(false, "Error al reconstruir la ruta");
+                return new RutaResultado(false, "Error interno: no se pudo reconstruir la ruta.");
             }
         }
         rutaParadas.add(0, origen);
 
-        double total = distancias.get(destino);
-        return new RutaResultado(true, rutaParadas, rutaRutas, total, criterio);
+        double totalAcumulado = distancias.get(destino);
+        return new RutaResultado(true, rutaParadas, rutaRutas, totalAcumulado, criterio);
     }
 
-    private class ParadaDistancia implements Comparable<ParadaDistancia> {
+    private static class ParadaDistancia implements Comparable<ParadaDistancia> {
         private Paradas parada;
         private double distancia;
 
@@ -127,8 +115,8 @@ public class AlgoritmosGrafos {
         }
 
         @Override
-        public int compareTo(ParadaDistancia otraParada) {
-            return Double.compare(this.distancia, otraParada.distancia);
+        public int compareTo(ParadaDistancia otra) {
+            return Double.compare(this.distancia, otra.distancia);
         }
     }
 
@@ -138,7 +126,7 @@ public class AlgoritmosGrafos {
         private List<Paradas> rutaParadas;
         private List<Rutas> rutaRutas;
         private double total;
-        private String criterio;
+        private CriterioRuta criterio;
 
         public RutaResultado(boolean exitoso, String mensaje) {
             this.exitoso = exitoso;
@@ -146,7 +134,7 @@ public class AlgoritmosGrafos {
         }
 
         public RutaResultado(boolean exitoso, List<Paradas> rutaParadas, List<Rutas> rutaRutas,
-                             double total, String criterio) {
+                             double total, CriterioRuta criterio) {
             this.exitoso = exitoso;
             this.rutaParadas = rutaParadas;
             this.rutaRutas = rutaRutas;
@@ -154,28 +142,31 @@ public class AlgoritmosGrafos {
             this.criterio = criterio;
         }
 
-        public void imprimirRuta() {
+        public String obtenerResumen() {
             if (!exitoso) {
-                System.out.println("Error: " + mensaje);
-                return;
+                return "Error: " + mensaje;
             }
 
-            System.out.println("\n=== RUTA ENCONTRADA (por " + criterio + ") ===");
-            System.out.println("Total " + criterio + ": " + total);
-            System.out.println("Recorrido:");
+            StringBuilder resumen = new StringBuilder();
+            resumen.append("Ruta encontrada por ").append(criterio).append(":\n");
+            resumen.append("Total ").append(criterio.toString().toLowerCase()).append(": ").append(total).append("\n\n");
+            resumen.append("Recorrido:\n");
 
             for (int i = 0; i < rutaParadas.size() - 1; i++) {
                 Paradas desde = rutaParadas.get(i);
                 Paradas hasta = rutaParadas.get(i + 1);
                 Rutas ruta = rutaRutas.get(i);
 
-                System.out.printf("  %s -> %s | Tiempo: %.1f | Distancia: %.1f | Costo: %.2f | %s\n",
-                        desde.getNombre(), hasta.getNombre(), ruta.getTiempo(),
-                        ruta.getDistancia(), ruta.getCosto(),
-                        ruta.isTransbordo() ? "CON TRANSBORDO" : "SIN TRANSBORDO");
+                resumen.append(String.format("  %s -> %s | T: %.1f | D: %.1f | C: %.2f | %s\n",
+                        desde.getNombre(),
+                        hasta.getNombre(),
+                        ruta.getTiempo(),
+                        ruta.getDistancia(),
+                        ruta.getCosto(),
+                        ruta.isTransbordo() ? "CON TRANSBORDO" : "SIN TRANSBORDO"));
             }
 
-            System.out.println("====================================\n");
+            return resumen.toString();
         }
 
         public boolean isExitoso() {
@@ -184,21 +175,6 @@ public class AlgoritmosGrafos {
 
         public String getMensaje() {
             return mensaje;
-        }
-
-        public List<Paradas> getRutaParadas() {
-            return rutaParadas;
-        }
-
-        public List<Rutas> getRutaRutas() {
-            return rutaRutas;
-        }
-
-        public double getTotal() {
-            return total;
-        }
-        public String getCriterio() {
-            return criterio;
         }
     }
 }
