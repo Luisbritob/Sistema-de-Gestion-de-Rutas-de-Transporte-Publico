@@ -4,9 +4,9 @@ public class Rutas {
    private double tiempo;
    private double distancia;
    private double costo;
-   private boolean transbordo;
+   private int transbordo;
    
-   public Rutas(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, boolean transbordo) {
+   public Rutas(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, int transbordo) {
       this.origen = origen;
       this.destino = destino;
       this.tiempo = tiempo;
@@ -35,7 +35,7 @@ public class Rutas {
       return costo;
    }
    
-   public boolean isTransbordo() {
+   public int getTransbordo() {
       
       return transbordo;
    }
@@ -52,7 +52,7 @@ public class Rutas {
       this.costo = costo;
    }
    
-   public void setTransbordo(boolean transbordo) {
+   public void setTransbordo(int transbordo) {
       this.transbordo = transbordo;
    }
    
@@ -76,6 +76,8 @@ public class Rutas {
             return distancia;
          case COSTO:
             return costo;
+         case TRANSBORDO:
+            return transbordo;
          default:
             return tiempo;
       }

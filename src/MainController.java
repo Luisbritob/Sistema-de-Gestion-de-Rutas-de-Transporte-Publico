@@ -16,7 +16,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
-
 public class MainController {
    
    @FXML
@@ -63,18 +62,18 @@ public class MainController {
       sistema.agregarParada(p4);
       sistema.agregarParada(p5);
       
-      sistema.agregarRuta(p1, p2, 5, 9, 45, false);
-      sistema.agregarRuta(p2, p3, 5, 9, 45, true);
+      sistema.agregarRuta(p1, p2, 5, 9, 45, 0);
+      sistema.agregarRuta(p2, p3, 5, 9, 45, 1);
       
-      sistema.agregarRuta(p1, p4, 10, 3, 30, false);
-      sistema.agregarRuta(p4, p3, 10, 3, 30, false);
+      sistema.agregarRuta(p1, p4, 10, 3, 30, 0);
+      sistema.agregarRuta(p4, p3, 10, 3, 30, 0);
       
-      sistema.agregarRuta(p1, p5, 8, 7, 8, false);
-      sistema.agregarRuta(p5, p3, 8, 7, 8, true);
+      sistema.agregarRuta(p1, p5, 8, 7, 8, 0);
+      sistema.agregarRuta(p5, p3, 8, 7, 8, 1);
       
-      sistema.agregarRuta(p2, p4, 4, 2, 12, false);
-      sistema.agregarRuta(p4, p5, 3, 2, 6, false);
-      sistema.agregarRuta(p5, p4, 3, 2, 6, false);
+      sistema.agregarRuta(p2, p4, 4, 2, 12, 0);
+      sistema.agregarRuta(p4, p5, 3, 2, 6, 0);
+      sistema.agregarRuta(p5, p4, 3, 2, 6, 0);
       
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
@@ -91,30 +90,30 @@ public class MainController {
          listaRutas.addAll(sistema.getGrafo().get(parada));
       }
    }
-
+   
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
       Paradas destino = comboDestino.getValue();
       CriterioRuta criterio = comboCriterio.getValue();
-
+      
       if (origen == null || destino == null || criterio == null) {
          areaResultado.setText("Debes seleccionar origen, destino y criterio.");
          return;
       }
-
+      
       if (origen.equals(destino)) {
          areaResultado.setText("El origen y el destino no pueden ser la misma parada.");
          return;
       }
-
+      
       AlgoritmosGrafos.RutaResultado resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
-
+      
       if (!resultado.isExitoso()) {
          areaResultado.setText(resultado.getMensaje());
          return;
       }
-
+      
       areaResultado.setText(resultado.obtenerResumen());
    }
    
@@ -207,10 +206,9 @@ public class MainController {
       txtCosto.setPromptText("Costo");
       txtCosto.setPrefWidth(280);
       
-      ComboBox<String> comboTransbordo = new ComboBox<>();
-      comboTransbordo.getItems().addAll("Sí", "No");
-      comboTransbordo.setPromptText("¿Tiene transbordo?");
-      comboTransbordo.setPrefWidth(280);
+      TextField txtTransbordos = new TextField();
+      txtTransbordos.setPromptText("Cantidad de transbordos");
+      txtTransbordos.setPrefWidth(280);
       
       Button btnGuardar = new Button("Guardar");
       btnGuardar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
@@ -232,22 +230,26 @@ public class MainController {
             double tiempo = Double.parseDouble(txtTiempo.getText().trim());
             double distancia = Double.parseDouble(txtDistancia.getText().trim());
             double costo = Double.parseDouble(txtCosto.getText().trim());
+            int transbordos = Integer.parseInt(txtTransbordos.getText().trim());
             
             if (tiempo < 0 || distancia < 0 || costo < 0) {
                mostrarAlerta("Error", "Tiempo, distancia y costo no pueden ser negativos.");
                return;
             }
             
-            boolean transbordo = "Sí".equals(comboTransbordo.getValue());
+            if (transbordos < 0) {
+               mostrarAlerta("Error", "Los transbordos no pueden ser negativos.");
+               return;
+            }
             
-            sistema.agregarRuta(origen, destino, tiempo, distancia, costo, transbordo);
+            sistema.agregarRuta(origen, destino, tiempo, distancia, costo, transbordos);
             actualizarListaRutas();
             
             mostrarAlerta("Éxito", "Ruta agregada correctamente.");
             ventana.close();
             
          } catch (NumberFormatException ex) {
-            mostrarAlerta("Error", "Tiempo, distancia y costo deben ser números válidos.");
+            mostrarAlerta("Error", "Tiempo, distancia, costo y transbordos deben ser números válidos.");
          }
       });
       
@@ -265,7 +267,7 @@ public class MainController {
               txtTiempo,
               txtDistancia,
               txtCosto,
-              comboTransbordo,
+              txtTransbordos,
               botones
       );
       
@@ -335,12 +337,12 @@ public class MainController {
       colCosto.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("costo"));
       colCosto.setPrefWidth(100);
       
-      TableColumn<Rutas, Boolean> colTransbordo = new TableColumn<>("Transbordo");
-      colTransbordo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordo"));
-      colTransbordo.setPrefWidth(100);
+      TableColumn<Rutas, Integer> colTransbordos = new TableColumn<>("Transbordos");
+      colTransbordos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordos"));
+      colTransbordos.setPrefWidth(120);
       
       tablaRutas.getColumns().addAll(
-              colOrigen, colDestino, colTiempo, colDistancia, colCosto, colTransbordo
+              colOrigen, colDestino, colTiempo, colDistancia, colCosto, colTransbordos
       );
       
       Button btnCerrar = new Button("Cerrar");
@@ -587,10 +589,9 @@ public class MainController {
       txtCosto.setPromptText("Nuevo costo");
       txtCosto.setPrefWidth(280);
       
-      ComboBox<String> comboTransbordo = new ComboBox<>();
-      comboTransbordo.getItems().addAll("Sí", "No");
-      comboTransbordo.setPromptText("¿Tiene transbordo?");
-      comboTransbordo.setPrefWidth(280);
+      TextField txtTransbordos = new TextField();
+      txtTransbordos.setPromptText("Nueva cantidad de transbordos");
+      txtTransbordos.setPrefWidth(280);
       
       Button btnModificar = new Button("Modificar");
       btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
@@ -612,21 +613,19 @@ public class MainController {
             double nuevoTiempo = Double.parseDouble(txtTiempo.getText().trim());
             double nuevaDistancia = Double.parseDouble(txtDistancia.getText().trim());
             double nuevoCosto = Double.parseDouble(txtCosto.getText().trim());
+            int nuevosTransbordos = Integer.parseInt(txtTransbordos.getText().trim());
             
             if (nuevoTiempo < 0 || nuevaDistancia < 0 || nuevoCosto < 0) {
                mostrarAlerta("Error", "Tiempo, distancia y costo no pueden ser negativos.");
                return;
             }
             
-            String valorTransbordo = comboTransbordo.getValue();
-            if (valorTransbordo == null) {
-               mostrarAlerta("Error", "Debes seleccionar si tiene transbordo.");
+            if (nuevosTransbordos < 0) {
+               mostrarAlerta("Error", "Los transbordos no pueden ser negativos.");
                return;
             }
             
-            boolean nuevoTransbordo = valorTransbordo.equals("Sí");
-            
-            sistema.modificarRuta(origen, destino, nuevoTiempo, nuevaDistancia, nuevoCosto, nuevoTransbordo);
+            sistema.modificarRuta(origen, destino, nuevoTiempo, nuevaDistancia, nuevoCosto, nuevosTransbordos);
             actualizarListaRutas();
             
             areaResultado.setText("Ruta modificada correctamente:\n" +
@@ -636,7 +635,7 @@ public class MainController {
             ventana.close();
             
          } catch (NumberFormatException ex) {
-            mostrarAlerta("Error", "Tiempo, distancia y costo deben ser números válidos.");
+            mostrarAlerta("Error", "Tiempo, distancia, costo y transbordos deben ser números válidos.");
          }
       });
       
@@ -654,7 +653,7 @@ public class MainController {
               txtTiempo,
               txtDistancia,
               txtCosto,
-              comboTransbordo,
+              txtTransbordos,
               botones
       );
       

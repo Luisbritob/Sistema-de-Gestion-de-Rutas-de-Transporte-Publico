@@ -1,5 +1,6 @@
 public enum CriterioRuta {
     TIEMPO,
     DISTANCIA,
-    COSTO
+    COSTO,
+    TRANSBORDO
 }
