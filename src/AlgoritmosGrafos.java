@@ -149,14 +149,33 @@ public class AlgoritmosGrafos {
             }
             
             StringBuilder resumen = new StringBuilder();
-            resumen.append("Ruta encontrada por ").append(criterio).append(":\n");
-            resumen.append("Total ").append(criterio.toString().toLowerCase()).append(": ").append(total).append("\n\n");
-            resumen.append("Recorrido:\n");
             
-            for (int i = 0; i < rutaParadas.size() - 1; i++) {
+            double tiempoTotal = 0;
+            double distanciaTotal = 0;
+            double costoTotal = 0;
+            int transbordosTotales = 0;
+            
+            resumen.append("Ruta encontrada por ").append(criterio).append(":\n\n");
+            
+            resumen.append("Recorrido completo:\n");
+            for (int i = 0; i < rutaParadas.size(); i++) {
+                resumen.append(rutaParadas.get(i).getNombre());
+                if (i < rutaParadas.size() - 1) {
+                    resumen.append(" -> ");
+                }
+            }
+            
+            resumen.append("\n\nDetalle por tramo:\n");
+            
+            for (int i = 0; i < rutaRutas.size(); i++) {
+                Rutas ruta = rutaRutas.get(i);
                 Paradas desde = rutaParadas.get(i);
                 Paradas hasta = rutaParadas.get(i + 1);
-                Rutas ruta = rutaRutas.get(i);
+                
+                tiempoTotal += ruta.getTiempo();
+                distanciaTotal += ruta.getDistancia();
+                costoTotal += ruta.getCosto();
+                transbordosTotales += ruta.getTransbordo();
                 
                 resumen.append(String.format(
                         "  %s -> %s | T: %.1f | D: %.1f | C: %.2f | Transbordos: %d\n",
@@ -168,6 +187,15 @@ public class AlgoritmosGrafos {
                         ruta.getTransbordo()
                 ));
             }
+            
+            resumen.append("\nTotales:\n");
+            resumen.append(String.format("Tiempo total: %.1f\n", tiempoTotal));
+            resumen.append(String.format("Distancia total: %.1f\n", distanciaTotal));
+            resumen.append(String.format("Costo total: %.2f\n", costoTotal));
+            resumen.append(String.format("Transbordos totales: %d\n", transbordosTotales));
+            
+            resumen.append("\nValor optimizado por ").append(criterio.toString().toLowerCase())
+                    .append(": ").append(total);
             
             return resumen.toString();
         }
