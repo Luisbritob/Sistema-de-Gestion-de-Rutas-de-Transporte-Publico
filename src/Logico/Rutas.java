@@ -1,3 +1,5 @@
+package Logico;
+
 public class Rutas {
    private Paradas origen;
    private Paradas destino;

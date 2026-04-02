@@ -1,3 +1,5 @@
+package Logico;
+
 public enum CriterioRuta {
     TIEMPO,
     DISTANCIA,

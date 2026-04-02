@@ -1,3 +1,6 @@
+package Visual;
+
+import Logico.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -287,7 +290,7 @@ public class MainController {
       Label titulo = new Label("VISUALIZACIÓN DEL GRAFO");
       titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
       
-      Label lblParadas = new Label("Paradas");
+      Label lblParadas = new Label("Logico.Paradas");
       lblParadas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
       
       TableView<Paradas> tablaParadas = new TableView<>();
@@ -304,7 +307,7 @@ public class MainController {
       
       tablaParadas.getColumns().addAll(colIdParada, colNombreParada);
       
-      Label lblRutas = new Label("Rutas");
+      Label lblRutas = new Label("Logico.Rutas");
       lblRutas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
       
       TableView<Rutas> tablaRutas = new TableView<>();

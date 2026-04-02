@@ -1,3 +1,5 @@
+package Logico;
+
 import java.util.Objects;
 
 public class Paradas {
