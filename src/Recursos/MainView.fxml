@@ -5,123 +5,102 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
+<HBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="Visual.MainController"
-      alignment="TOP_CENTER"
-      spacing="25"
-      prefWidth="950"
-      prefHeight="760"
+      spacing="20"
+      prefWidth="1200"
+      prefHeight="700"
       style="-fx-background-color: #A7B3BF;">
 
     <padding>
-        <Insets top="25" right="25" bottom="25" left="25"/>
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
     <children>
 
-        <ImageView fx:id="logoView" fitWidth="350" preserveRatio="true" smooth="true" cache="true">
-            <image>
-                <Image url="@logo.png"/>
-            </image>
-        </ImageView>
-
-        <GridPane alignment="CENTER" hgap="70" vgap="25">
-            <columnConstraints>
-                <ColumnConstraints halignment="CENTER"/>
-                <ColumnConstraints halignment="CENTER"/>
-            </columnConstraints>
+        <!-- PANEL IZQUIERDO -->
+        <VBox spacing="18"
+              prefWidth="320"
+              style="-fx-background-color: #0F1C3F; -fx-padding: 20; -fx-background-radius: 12;">
 
             <children>
-                <Button text="Agregar parada"
-                        prefWidth="240" prefHeight="60"
-                        onAction="#agregarParada"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
 
-                <Button text="Agregar ruta"
-                        prefWidth="240" prefHeight="60"
-                        GridPane.columnIndex="1"
-                        onAction="#agregarRuta"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
+                <Label text="ROUTEFINDER"
+                       style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" />
 
-                <Button text="Modificar parada"
-                        prefWidth="240" prefHeight="60"
-                        GridPane.rowIndex="1"
-                        onAction="#modificarParada"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
+                <Label text="OPCIONES"
+                       style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;" />
 
-                <Button text="Modificar ruta"
-                        prefWidth="240" prefHeight="60"
-                        GridPane.columnIndex="1" GridPane.rowIndex="1"
-                        onAction="#modificarRuta"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
+                <Button text="RUTAS"
+                        onAction="#rutas"
+                        prefWidth="260" prefHeight="45"
+                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 16px; -fx-font-weight: bold;" />
 
-                <Button text="Eliminar parada"
-                        prefWidth="240" prefHeight="60"
-                        GridPane.rowIndex="2"
-                        onAction="#eliminarParada"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
+                <Button text="PARADAS"
+                        onAction="#paradas"
+                        prefWidth="260" prefHeight="45"
+                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 16px; -fx-font-weight: bold;" />
 
-                <Button text="Eliminar ruta"
-                        prefWidth="240" prefHeight="60"
-                        GridPane.columnIndex="1" GridPane.rowIndex="2"
-                        onAction="#eliminarRuta"
-                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
-            </children>
-        </GridPane>
+                <Button text="VER GRAFO"
+                        onAction="#verGrafo"
+                        prefWidth="260" prefHeight="45"
+                        style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 16px; -fx-font-weight: bold;" />
 
-        <Button text="Ver grafo"
-                prefWidth="240" prefHeight="60"
-                onAction="#verGrafo"
-                style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 4px;" />
+                <Region prefHeight="15"/>
 
-        <VBox spacing="15"
-              alignment="CENTER"
-              style="-fx-background-color: rgba(255,255,255,0.30); -fx-border-color: #63666A; -fx-border-width: 3px; -fx-padding: 20;"
-              maxWidth="760">
+                <Label text="BUSCAR RUTA"
+                       style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;" />
 
-            <children>
-                <Label text="Buscar mejor ruta"
-                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;" />
+                <Label text="Origen"
+                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" />
+                <ComboBox fx:id="comboOrigen" prefWidth="260"/>
 
-                <HBox spacing="15" alignment="CENTER">
-                    <children>
-                        <Label text="Origen:" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-                        <ComboBox fx:id="comboOrigen" prefWidth="180"/>
+                <Label text="Destino"
+                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" />
+                <ComboBox fx:id="comboDestino" prefWidth="260"/>
 
-                        <Region prefWidth="20"/>
+                <Label text="Criterio"
+                       style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" />
+                <ComboBox fx:id="comboCriterio" prefWidth="260"/>
 
-                        <Label text="Destino:" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-                        <ComboBox fx:id="comboDestino" prefWidth="180"/>
-                    </children>
-                </HBox>
-
-                <HBox spacing="15" alignment="CENTER">
-                    <children>
-                        <Label text="Criterio:" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-                        <ComboBox fx:id="comboCriterio" prefWidth="180"/>
-                        <Button text="Buscar ruta"
-                                prefWidth="180" prefHeight="45"
-                                onAction="#buscarRuta"
-                                style="-fx-background-color: white; -fx-text-fill: #0F1C3F; -fx-font-size: 16px; -fx-font-weight: bold; -fx-border-color: #63666A; -fx-border-width: 3px;" />
-                    </children>
-                </HBox>
+                <Button text="Buscar mejor ruta"
+                        onAction="#buscarRuta"
+                        prefWidth="260" prefHeight="45"
+                        style="-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" />
 
                 <TextArea fx:id="areaResultado"
-                          prefWidth="700"
-                          prefHeight="170"
-                          editable="false"
+                          prefWidth="260"
+                          prefHeight="190"
                           wrapText="true"
-                          style="-fx-font-size: 14px; -fx-control-inner-background: white; -fx-border-color: #63666A; -fx-border-width: 2px;" />
+                          editable="false"
+                          style="-fx-font-size: 13px; -fx-control-inner-background: white;" />
+
+            </children>
+        </VBox>
+
+        <!-- PANEL DERECHO -->
+        <VBox spacing="15"
+              alignment="TOP_CENTER"
+              style="-fx-background-color: #D9DEE5; -fx-padding: 20; -fx-background-radius: 12;"
+              HBox.hgrow="ALWAYS">
+
+            <children>
+
+                <Label text="MAPA"
+                       style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;" />
+
+                <Pane fx:id="paneMapa"
+                      prefWidth="800"
+                      prefHeight="620"
+                      style="-fx-background-color: white; -fx-border-color: #0F1C3F; -fx-border-width: 3; -fx-background-radius: 8;" />
+
             </children>
         </VBox>
 
     </children>
-</VBox>
+</HBox>
