@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="file://$USER_HOME$/Downloads/openjfx-25.0.2_windows-x64_bin-sdk/javafx-sdk-25.0.2/lib" />
       <root url="file://$USER_HOME$/Downloads/openjfx-25.0.2_windows-x64_bin-sdk/javafx-sdk-25.0.2/lib" />
+      <root url="jar://$USER_HOME$/Downloads/smartgraph-2.3.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
