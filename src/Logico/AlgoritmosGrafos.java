@@ -26,6 +26,8 @@ public class AlgoritmosGrafos {
         Set<Paradas> visitados = new HashSet<>();
         PriorityQueue<ParadaDistancia> cola = new PriorityQueue<>();
         
+        
+        
         for (Paradas parada : grafo.keySet()) {
             distancias.put(parada, Double.MAX_VALUE);
         }
@@ -145,6 +147,22 @@ public class AlgoritmosGrafos {
             this.criterio = criterio;
         }
         
+        public boolean isExitoso() {
+            return exitoso;
+        }
+        
+        public String getMensaje() {
+            return mensaje;
+        }
+        
+        public List<Paradas> getRutaParadas() {
+            return rutaParadas;
+        }
+        
+        public List<Rutas> getRutaRutas() {
+            return rutaRutas;
+        }
+        
         public String obtenerResumen() {
             if (!exitoso) {
                 return "Error: " + mensaje;
@@ -200,14 +218,6 @@ public class AlgoritmosGrafos {
                     .append(": ").append(total);
             
             return resumen.toString();
-        }
-        
-        public boolean isExitoso() {
-            return exitoso;
-        }
-        
-        public String getMensaje() {
-            return mensaje;
         }
     }
 }

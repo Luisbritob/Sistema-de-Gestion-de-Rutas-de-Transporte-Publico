@@ -38,6 +38,12 @@ public class MainController {
    
    private final SistemaGrafos sistema = new SistemaGrafos();
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
+   private AlgoritmosGrafos.RutaResultado ultimaRutaResultado;
+   
+   private final Color COLOR_RUTA_NORMAL = Color.GRAY;
+   private final Color COLOR_RUTA_DESTACADA = Color.RED;
+   private final Color COLOR_PARADA_NORMAL = Color.web("#0F1C3F");
+   private final Color COLOR_PARADA_DESTACADA = Color.RED;
    
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
    private final ObservableList<Rutas> listaRutas = FXCollections.observableArrayList();
@@ -136,6 +142,7 @@ public class MainController {
       posiciones.put(buscarParadaPorNombre("Ágora Mall"), new double[]{250, 300});
       posiciones.put(buscarParadaPorNombre("BlueMall"), new double[]{540, 360});
       
+      // Dibujar rutas
       for (Paradas origen : sistema.getGrafo().keySet()) {
          for (Rutas ruta : sistema.getGrafo().get(origen)) {
             Paradas destino = ruta.getDestino();
@@ -145,13 +152,23 @@ public class MainController {
             
             if (p1 != null && p2 != null) {
                Line linea = new Line(p1[0], p1[1], p2[0], p2[1]);
-               linea.setStroke(Color.GRAY);
-               linea.setStrokeWidth(2.5);
+               
+               if (ultimaRutaResultado != null
+                       && ultimaRutaResultado.getRutaRutas() != null
+                       && ultimaRutaResultado.getRutaRutas().contains(ruta)) {
+                  linea.setStroke(Color.RED);
+                  linea.setStrokeWidth(4);
+               } else {
+                  linea.setStroke(Color.GRAY);
+                  linea.setStrokeWidth(2.5);
+               }
+               
                paneMapa.getChildren().add(linea);
             }
          }
       }
       
+      // Dibujar paradas
       for (Paradas parada : posiciones.keySet()) {
          if (parada == null) {
             continue;
@@ -160,12 +177,27 @@ public class MainController {
          double[] pos = posiciones.get(parada);
          
          Circle circulo = new Circle(pos[0], pos[1], 16);
-         circulo.setFill(Color.web("#0F1C3F"));
+         
+         boolean paradaDestacada = ultimaRutaResultado != null
+                 && ultimaRutaResultado.getRutaParadas() != null
+                 && ultimaRutaResultado.getRutaParadas().contains(parada);
+         
+         if (paradaDestacada) {
+            circulo.setFill(Color.RED);
+            circulo.setRadius(18);
+         } else {
+            circulo.setFill(Color.web("#0F1C3F"));
+         }
          
          Label nombre = new Label(parada.getNombre());
          nombre.setLayoutX(pos[0] + 18);
          nombre.setLayoutY(pos[1] - 10);
-         nombre.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+         
+         if (paradaDestacada) {
+            nombre.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: red;");
+         } else {
+            nombre.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+         }
          
          paneMapa.getChildren().addAll(circulo, nombre);
       }
@@ -200,10 +232,14 @@ public class MainController {
       AlgoritmosGrafos.RutaResultado resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
       
       if (!resultado.isExitoso()) {
+         ultimaRutaResultado = null;
+         dibujarMapa();
          areaResultado.setText(resultado.getMensaje());
          return;
       }
       
+      ultimaRutaResultado = resultado;
+      dibujarMapa();
       areaResultado.setText(resultado.obtenerResumen());
    }
    
