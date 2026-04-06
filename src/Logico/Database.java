@@ -171,19 +171,4 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-
-    public static void main(String[] args) {
-        try (Connection conn = getConnection()) {
-            System.out.println("✅ Conexión exitosa a PostgreSQL local!");
-
-            // Probar consulta
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM paradas");
-            if (rs.next()) {
-                System.out.println("📊 Número de paradas: " + rs.getInt(1));
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Error de conexión: " + e.getMessage());
-        }
-    }
 }
