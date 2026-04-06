@@ -7,31 +7,22 @@ import java.util.List;
 import java.util.Map;
 
 public class Database {
-
-    // CONFIGURACIÓN PARA SUPABASE
-    private static final String URL = "jdbc:postgresql://db.myvvaultusceqzpcoies.supabase.co:5432/postgres?sslmode=require";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "Ld9FnmwlYcD8njV6"; // Usa la contraseña correcta
-
-    private static Connection connection = null;
-
+    
+    private static final String URL =
+            "jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require";
+    private static final String USER = "postgres.myvvaultusceqzpcoies";
+    private static final String PASSWORD = "Ld9FnmwlYcD8njV6";
+    
     public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            try {
-                Class.forName("org.postgresql.Driver");
-                System.out.println("Conectando a Supabase...");
-                connection = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("✅ Conexión exitosa a Supabase!");
-            } catch (ClassNotFoundException e) {
-                throw new SQLException("Driver de PostgreSQL no encontrado", e);
-            } catch (SQLException e) {
-                System.err.println("❌ Error de conexión: " + e.getMessage());
-                throw e;
-            }
+        try {
+            Class.forName("org.postgresql.Driver");
+            System.out.println("Conectando a Supabase...");
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Driver de PostgreSQL no encontrado", e);
         }
-        return connection;
     }
-
+    
     public static List<Paradas> obtenerTodasParadas() {
         List<Paradas> paradas = new ArrayList<>();
         String sql = "SELECT id, nombre FROM paradas ORDER BY id";
@@ -183,17 +174,5 @@ public class Database {
         }
     }
 
-    public static void main(String[] args) {
-        try (Connection conn = getConnection()) {
-            System.out.println("✅ Conectado a Supabase!");
-
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM paradas");
-            if (rs.next()) {
-                System.out.println("📊 Número de paradas: " + rs.getInt(1));
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Error: " + e.getMessage());
-        }
-    }
+  
 }
