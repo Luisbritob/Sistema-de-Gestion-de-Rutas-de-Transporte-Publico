@@ -53,10 +53,16 @@ public class SistemaGrafos {
       parada.setNombre(nuevoNombre);
       Database.modificarParada(parada, nuevoNombre);
    }
-
+   
    public void agregarRuta(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, int transbordo) {
       if (!grafo.containsKey(origen) || !grafo.containsKey(destino)) return;
-
+      
+      for (Rutas r : grafo.get(origen)) {
+         if (r.getDestino().equals(destino)) {
+            return;
+         }
+      }
+      
       Rutas nuevaRuta = new Rutas(origen, destino, tiempo, distancia, costo, transbordo);
       grafo.get(origen).add(nuevaRuta);
       Database.guardarRuta(nuevaRuta);

@@ -52,8 +52,11 @@ public class MainController {
    
    @FXML
    public void initialize() {
-      inicializarDatosEjemplo();
+      listaParadas.setAll(sistema.getGrafo().keySet());
+      actualizarListaRutas();
       actualizarCombos();
+      
+      nextIdParada = Database.obtenerSiguienteIdParada();
       
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
@@ -62,6 +65,7 @@ public class MainController {
       
       inicializarSmartGraph();
    }
+   
    
    private void inicializarSmartGraph() {
       digraph = new DigraphEdgeList<>();
@@ -123,6 +127,7 @@ public class MainController {
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
    }
+   
    
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
