@@ -6,7 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
@@ -92,11 +92,10 @@
                 <Label text="MAPA"
                        style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;" />
 
-                <Pane fx:id="paneMapa"
-                      prefWidth="800"
-                      prefHeight="620"
-                      style="-fx-background-color: white; -fx-border-color: #0F1C3F; -fx-border-width: 3; -fx-background-radius: 8;" />
-
+                <StackPane fx:id="contenedorMapa"
+                           prefWidth="800"
+                           prefHeight="620"
+                           style="-fx-background-color: white; -fx-border-color: #0F1C3F; -fx-border-width: 3; -fx-background-radius: 8;" />
             </children>
         </VBox>
 

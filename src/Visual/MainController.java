@@ -1,6 +1,7 @@
 package Visual;
 
 import Logico.*;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,16 +10,16 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-import javafx.application.Platform;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.brunomnsilva.smartgraph.graph.Digraph;
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
+import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
 
 public class MainController {
    
@@ -35,36 +36,94 @@ public class MainController {
    private TextArea areaResultado;
    
    @FXML
-   private Pane paneMapa;
+   private StackPane contenedorMapa;
    
    private final SistemaGrafos sistema = new SistemaGrafos();
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
    private AlgoritmosGrafos.RutaResultado ultimaRutaResultado;
    
-   private final Color COLOR_RUTA_NORMAL = Color.GRAY;
-   private final Color COLOR_RUTA_DESTACADA = Color.RED;
-   private final Color COLOR_PARADA_NORMAL = Color.web("#0F1C3F");
-   private final Color COLOR_PARADA_DESTACADA = Color.RED;
-   
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
    private final ObservableList<Rutas> listaRutas = FXCollections.observableArrayList();
-
-   private int nextIdParada = Database.obtenerSiguienteIdParada();
+   
+   private Digraph<Paradas, Rutas> digraph;
+   private SmartGraphPanel<Paradas, Rutas> graphView;
+   
+   private int nextIdParada = 1;
+   
    @FXML
    public void initialize() {
+      inicializarDatosEjemplo();
+      actualizarCombos();
+      
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
-
-      listaParadas.setAll(sistema.getGrafo().keySet());
-      actualizarCombos();
-
+      
       areaResultado.setText("Selecciona un origen, destino y criterio para buscar la mejor ruta.");
-
-      Platform.runLater(() -> {
-         dibujarMapa();
-      });
+      
+      inicializarSmartGraph();
    }
-
+   
+   private void inicializarSmartGraph() {
+      digraph = new DigraphEdgeList<>();
+      
+      for (Paradas parada : sistema.getGrafo().keySet()) {
+         digraph.insertVertex(parada);
+      }
+      
+      for (Paradas origen : sistema.getGrafo().keySet()) {
+         for (Rutas ruta : sistema.getGrafo().get(origen)) {
+            digraph.insertEdge(origen, ruta.getDestino(), ruta);
+         }
+      }
+      
+      SmartPlacementStrategy strategy = new SmartCircularSortedPlacementStrategy();
+      graphView = new SmartGraphPanel<>(digraph, strategy);
+      
+      var cssUrl = getClass().getResource("/Recursos/smartgraph.css");
+      if (cssUrl != null) {
+         graphView.getStylesheets().clear();
+         graphView.getStylesheets().add(cssUrl.toExternalForm());
+         System.out.println("CSS cargado: " + cssUrl);
+      } else {
+         System.out.println("No se encontró /Recursos/smartgraph.css");
+      }
+      
+      contenedorMapa.getChildren().clear();
+      contenedorMapa.getChildren().add(graphView);
+      
+      Platform.runLater(() -> graphView.init());
+   }
+   
+   private void inicializarDatosEjemplo() {
+      Paradas p1 = new Paradas(nextIdParada++, "PUCMM");
+      Paradas p2 = new Paradas(nextIdParada++, "Centro Olímpico");
+      Paradas p3 = new Paradas(nextIdParada++, "UASD");
+      Paradas p4 = new Paradas(nextIdParada++, "Ágora Mall");
+      Paradas p5 = new Paradas(nextIdParada++, "BlueMall");
+      
+      sistema.agregarParada(p1);
+      sistema.agregarParada(p2);
+      sistema.agregarParada(p3);
+      sistema.agregarParada(p4);
+      sistema.agregarParada(p5);
+      
+      sistema.agregarRuta(p1, p2, 5, 9, 45, 0);
+      sistema.agregarRuta(p2, p3, 5, 9, 45, 1);
+      
+      sistema.agregarRuta(p1, p4, 10, 3, 30, 0);
+      sistema.agregarRuta(p4, p3, 10, 3, 30, 0);
+      
+      sistema.agregarRuta(p1, p5, 8, 7, 8, 0);
+      sistema.agregarRuta(p5, p3, 8, 7, 8, 1);
+      
+      sistema.agregarRuta(p2, p4, 4, 2, 12, 0);
+      sistema.agregarRuta(p4, p5, 3, 2, 6, 0);
+      sistema.agregarRuta(p5, p4, 3, 2, 6, 0);
+      
+      listaParadas.setAll(sistema.getGrafo().keySet());
+      actualizarListaRutas();
+   }
+   
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
       comboDestino.setItems(listaParadas);
@@ -80,7 +139,10 @@ public class MainController {
    private void redibujarTodo() {
       actualizarCombos();
       actualizarListaRutas();
-      dibujarMapa();
+      
+      if (graphView != null) {
+         graphView.update();
+      }
    }
    
    private void mostrarAlerta(String titulo, String mensaje) {
@@ -89,91 +151,6 @@ public class MainController {
       alert.setHeaderText(null);
       alert.setContentText(mensaje);
       alert.showAndWait();
-   }
-   
-   private Paradas buscarParadaPorNombre(String nombre) {
-      for (Paradas parada : sistema.getGrafo().keySet()) {
-         if (parada.getNombre().equals(nombre)) {
-            return parada;
-         }
-      }
-      return null;
-   }
-   
-   private void dibujarMapa() {
-      if (paneMapa == null) {
-         return;
-      }
-      
-      paneMapa.getChildren().clear();
-      
-      Map<Paradas, double[]> posiciones = new HashMap<>();
-      
-      posiciones.put(buscarParadaPorNombre("PUCMM"), new double[]{100, 100});
-      posiciones.put(buscarParadaPorNombre("Centro Olímpico"), new double[]{280, 90});
-      posiciones.put(buscarParadaPorNombre("UASD"), new double[]{520, 180});
-      posiciones.put(buscarParadaPorNombre("Ágora Mall"), new double[]{250, 300});
-      posiciones.put(buscarParadaPorNombre("BlueMall"), new double[]{540, 360});
-      
-      // Dibujar rutas
-      for (Paradas origen : sistema.getGrafo().keySet()) {
-         for (Rutas ruta : sistema.getGrafo().get(origen)) {
-            Paradas destino = ruta.getDestino();
-            
-            double[] p1 = posiciones.get(origen);
-            double[] p2 = posiciones.get(destino);
-            
-            if (p1 != null && p2 != null) {
-               Line linea = new Line(p1[0], p1[1], p2[0], p2[1]);
-               
-               if (ultimaRutaResultado != null
-                       && ultimaRutaResultado.getRutaRutas() != null
-                       && ultimaRutaResultado.getRutaRutas().contains(ruta)) {
-                  linea.setStroke(Color.RED);
-                  linea.setStrokeWidth(4);
-               } else {
-                  linea.setStroke(Color.GRAY);
-                  linea.setStrokeWidth(2.5);
-               }
-               
-               paneMapa.getChildren().add(linea);
-            }
-         }
-      }
-      
-      // Dibujar paradas
-      for (Paradas parada : posiciones.keySet()) {
-         if (parada == null) {
-            continue;
-         }
-         
-         double[] pos = posiciones.get(parada);
-         
-         Circle circulo = new Circle(pos[0], pos[1], 16);
-         
-         boolean paradaDestacada = ultimaRutaResultado != null
-                 && ultimaRutaResultado.getRutaParadas() != null
-                 && ultimaRutaResultado.getRutaParadas().contains(parada);
-         
-         if (paradaDestacada) {
-            circulo.setFill(Color.RED);
-            circulo.setRadius(18);
-         } else {
-            circulo.setFill(Color.web("#0F1C3F"));
-         }
-         
-         Label nombre = new Label(parada.getNombre());
-         nombre.setLayoutX(pos[0] + 18);
-         nombre.setLayoutY(pos[1] - 10);
-         
-         if (paradaDestacada) {
-            nombre.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: red;");
-         } else {
-            nombre.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-         }
-         
-         paneMapa.getChildren().addAll(circulo, nombre);
-      }
    }
    
    @FXML
@@ -206,14 +183,46 @@ public class MainController {
       
       if (!resultado.isExitoso()) {
          ultimaRutaResultado = null;
-         dibujarMapa();
          areaResultado.setText(resultado.getMensaje());
          return;
       }
       
       ultimaRutaResultado = resultado;
-      dibujarMapa();
       areaResultado.setText(resultado.obtenerResumen());
+      
+      resaltarRuta(resultado.getRutaParadas());
+   }
+   
+   private void resaltarRuta(List<Paradas> camino) {
+      if (camino == null || camino.isEmpty() || graphView == null) {
+         return;
+      }
+      
+      for (Paradas p : sistema.getGrafo().keySet()) {
+         graphView.getStylableVertex(p).setStyleClass("vertex");
+      }
+      
+      for (Paradas origen : sistema.getGrafo().keySet()) {
+         for (Rutas r : sistema.getGrafo().get(origen)) {
+            graphView.getStylableEdge(r).setStyleClass("edge");
+         }
+      }
+      
+      for (Paradas p : camino) {
+         graphView.getStylableVertex(p).setStyleClass("myVertex");
+      }
+      
+      for (int i = 0; i < camino.size() - 1; i++) {
+         Paradas a = camino.get(i);
+         Paradas b = camino.get(i + 1);
+         
+         for (Rutas r : sistema.getGrafo().get(a)) {
+            if (r.getDestino().equals(b)) {
+               graphView.getStylableEdge(r).setStyleClass("myEdge");
+               break;
+            }
+         }
+      }
    }
    
    private void mostrarVentanaRutas() {
@@ -351,7 +360,9 @@ public class MainController {
          sistema.agregarParada(nuevaParada);
          listaParadas.add(nuevaParada);
          
+         digraph.insertVertex(nuevaParada);
          redibujarTodo();
+         
          mostrarAlerta("Éxito", "Parada agregada correctamente.");
          ventana.close();
       });
@@ -439,6 +450,23 @@ public class MainController {
             }
             
             sistema.agregarRuta(origen, destino, tiempo, distancia, costo, transbordos);
+            
+            Rutas rutaNueva = null;
+            for (Rutas ruta : sistema.getGrafo().get(origen)) {
+               if (ruta.getDestino().equals(destino)
+                       && ruta.getTiempo() == tiempo
+                       && ruta.getDistancia() == distancia
+                       && ruta.getCosto() == costo
+                       && ruta.getTransbordo() == transbordos) {
+                  rutaNueva = ruta;
+                  break;
+               }
+            }
+            
+            if (rutaNueva != null) {
+               digraph.insertEdge(origen, destino, rutaNueva);
+            }
+            
             redibujarTodo();
             
             mostrarAlerta("Éxito", "Ruta agregada correctamente.");
@@ -599,7 +627,10 @@ public class MainController {
             comboDestino.setValue(null);
          }
          
-         redibujarTodo();
+         inicializarSmartGraph();
+         actualizarCombos();
+         actualizarListaRutas();
+         
          areaResultado.setText("Parada eliminada correctamente: " + paradaSeleccionada.getNombre());
          mostrarAlerta("Éxito", "Parada eliminada correctamente.");
          ventana.close();
@@ -656,7 +687,10 @@ public class MainController {
          }
          
          sistema.eliminarRuta(origen, destino);
-         redibujarTodo();
+         
+         inicializarSmartGraph();
+         actualizarCombos();
+         actualizarListaRutas();
          
          areaResultado.setText("Ruta eliminada correctamente:\n" +
                  origen.getNombre() + " -> " + destino.getNombre());
@@ -811,7 +845,10 @@ public class MainController {
             }
             
             sistema.modificarRuta(origen, destino, nuevoTiempo, nuevaDistancia, nuevoCosto, nuevosTransbordos);
-            redibujarTodo();
+            
+            inicializarSmartGraph();
+            actualizarCombos();
+            actualizarListaRutas();
             
             areaResultado.setText("Ruta modificada correctamente:\n" +
                     origen.getNombre() + " -> " + destino.getNombre());

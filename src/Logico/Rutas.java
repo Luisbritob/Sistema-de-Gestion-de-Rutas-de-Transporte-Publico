@@ -38,7 +38,6 @@ public class Rutas {
    }
    
    public int getTransbordo() {
-      
       return transbordo;
    }
    
@@ -55,21 +54,14 @@ public class Rutas {
    }
    
    public void setTransbordo(int transbordo) {
-      this.transbordo = transbordo;
+      this.transbordo = this.transbordo;
    }
    
    @Override
    public String toString() {
-      return "Ruta{" +
-              "origen=" + origen.getNombre() +
-              ", destino=" + destino.getNombre() +
-              ", tiempo=" + tiempo +
-              ", distancia=" + distancia +
-              ", costo=" + costo +
-              ", transbordo=" + transbordo +
-              '}';
+      return "";
    }
-
+   
    public double getPesoSegunCriterio(CriterioRuta criterio) {
       switch (criterio) {
          case TIEMPO:
@@ -84,6 +76,4 @@ public class Rutas {
             return tiempo;
       }
    }
-   
 }
-
