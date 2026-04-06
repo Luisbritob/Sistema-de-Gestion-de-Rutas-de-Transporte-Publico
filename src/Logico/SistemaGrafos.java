@@ -6,181 +6,83 @@ import java.util.List;
 import java.util.Map;
 
 public class SistemaGrafos {
-   
+
    private Map<Paradas, List<Rutas>> grafo;
-   
+
    public SistemaGrafos() {
       grafo = new HashMap<>();
+      cargarDatosDesdeDB();
    }
-   
+
+   private void cargarDatosDesdeDB() {
+      List<Paradas> paradas = Database.obtenerTodasParadas();
+      for (Paradas p : paradas) {
+         grafo.put(p, new ArrayList<>());
+      }
+
+      List<Rutas> rutas = Database.obtenerTodasRutas(grafo);
+      for (Rutas r : rutas) {
+         grafo.get(r.getOrigen()).add(r);
+      }
+   }
+
+   public void recargarDatos() {
+      grafo.clear();
+      cargarDatosDesdeDB();
+   }
+
    public void agregarParada(Paradas parada) {
-      if (parada == null) {
-         System.out.println("Error: la parada no puede ser null.");
-         return;
-      }
-      
-      if (parada.getNombre() == null || parada.getNombre().trim().isEmpty()) {
-         System.out.println("Error: el nombre de la parada no puede estar vacio.");
-         return;
-      }
-      
-      if (grafo.containsKey(parada)) {
-         System.out.println("Error: ya existe una parada con ese ID.");
-         return;
-      }
-      
+      if (parada == null) return;
+      if (grafo.containsKey(parada)) return;
+
       grafo.put(parada, new ArrayList<>());
-      System.out.println("Parada agregada correctamente.");
+      Database.guardarParada(parada);
    }
-   
+
    public void eliminarParada(Paradas parada) {
-      if (parada == null) {
-         System.out.println("Error: la parada no puede ser null.");
-         return;
-      }
-      
-      if (!grafo.containsKey(parada)) {
-         System.out.println("Error: la parada no existe.");
-         return;
-      }
-      
+      if (!grafo.containsKey(parada)) return;
+
       grafo.remove(parada);
-      
-      for (List<Rutas> rutas : grafo.values()) {
-         rutas.removeIf(ruta -> ruta.getDestino().equals(parada));
-      }
-      
-      System.out.println("Parada eliminada correctamente.");
+      Database.eliminarParada(parada);
+      recargarDatos();
    }
-   
+
    public void modificarParada(Paradas parada, String nuevoNombre) {
-      if (parada == null) {
-         System.out.println("Error: la parada no puede ser null.");
-         return;
-      }
-      
-      if (!grafo.containsKey(parada)) {
-         System.out.println("Error: la parada no existe.");
-         return;
-      }
-      
-      if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
-         System.out.println("Error: el nuevo nombre no puede estar vacío.");
-         return;
-      }
-      
+      if (!grafo.containsKey(parada)) return;
+
       parada.setNombre(nuevoNombre);
-      System.out.println("Parada modificada correctamente.");
+      Database.modificarParada(parada, nuevoNombre);
    }
-   
+
    public void agregarRuta(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, int transbordo) {
-      
-      if (origen == null || destino == null) {
-         System.out.println("Error: el origen y destino no pueden ser null.");
-         return;
-      }
-      
-      if (!grafo.containsKey(origen) || !grafo.containsKey(destino)) {
-         System.out.println("Error: la parada de origen o destino no existe.");
-         return;
-      }
-      
-      if (origen.equals(destino)) {
-         System.out.println("Error: una ruta no puede ir a sí misma.");
-         return;
-      }
-      
-      if (tiempo < 0 || distancia < 0 || costo < 0) {
-         System.out.println("Error: tiempo, distancia y costo no pueden ser negativos.");
-         return;
-      }
-      
-      if (transbordo < 0) {
-         System.out.println("Error: los transbordos no pueden ser negativos.");
-         return;
-      }
-      
-      List<Rutas> rutas = grafo.get(origen);
-      
-      for (Rutas ruta : rutas) {
-         if (ruta.getDestino().equals(destino)) {
-            System.out.println("Error: ya existe una ruta desde "
-                    + origen.getNombre() + " hasta " + destino.getNombre() + ".");
-            return;
-         }
-      }
-      
+      if (!grafo.containsKey(origen) || !grafo.containsKey(destino)) return;
+
       Rutas nuevaRuta = new Rutas(origen, destino, tiempo, distancia, costo, transbordo);
-      rutas.add(nuevaRuta);
-      
-      System.out.println("Ruta agregada correctamente.");
+      grafo.get(origen).add(nuevaRuta);
+      Database.guardarRuta(nuevaRuta);
    }
-   
+
    public void eliminarRuta(Paradas origen, Paradas destino) {
-      if (origen == null || destino == null) {
-         System.out.println("Error: el origen y destino no pueden ser null.");
-         return;
-      }
-      
-      if (!grafo.containsKey(origen)) {
-         System.out.println("Error: la parada de origen no existe.");
-         return;
-      }
-      
       List<Rutas> rutas = grafo.get(origen);
-      boolean eliminada = rutas.removeIf(ruta -> ruta.getDestino().equals(destino));
-      
-      if (!eliminada) {
-         System.out.println("Error: no existe una ruta desde "
-                 + origen.getNombre() + " hasta " + destino.getNombre() + ".");
-         return;
-      }
-      
-      System.out.println("Ruta eliminada correctamente.");
+      rutas.removeIf(r -> r.getDestino().equals(destino));
+      Database.eliminarRuta(origen, destino);
    }
-   
+
    public void modificarRuta(Paradas origen, Paradas destino, double nuevoTiempo, double nuevaDistancia, double nuevoCosto, int nuevoTransbordo) {
-      
-      if (origen == null || destino == null) {
-         System.out.println("Error: el origen y destino no pueden ser null.");
-         return;
-      }
-      
-      if (!grafo.containsKey(origen)) {
-         System.out.println("Error: la parada de origen no existe.");
-         return;
-      }
-      
-      if (nuevoTiempo < 0 || nuevaDistancia < 0 || nuevoCosto < 0) {
-         System.out.println("Error: tiempo, distancia y costo no pueden ser negativos.");
-         return;
-      }
-      
-      if (nuevoTransbordo < 0) {
-         System.out.println("Error: los transbordos no pueden ser negativos.");
-         return;
-      }
-      
       List<Rutas> rutas = grafo.get(origen);
-      
-      for (Rutas ruta : rutas) {
-         if (ruta.getDestino().equals(destino)) {
-            ruta.setTiempo(nuevoTiempo);
-            ruta.setDistancia(nuevaDistancia);
-            ruta.setCosto(nuevoCosto);
-            ruta.setTransbordo(nuevoTransbordo);
-            
-            System.out.println("Ruta modificada correctamente.");
-            return;
+      for (Rutas r : rutas) {
+         if (r.getDestino().equals(destino)) {
+            r.setTiempo(nuevoTiempo);
+            r.setDistancia(nuevaDistancia);
+            r.setCosto(nuevoCosto);
+            r.setTransbordo(nuevoTransbordo);
+            Database.modificarRuta(r);
+            break;
          }
       }
-      
-      System.out.println("Error: no existe una ruta desde "
-              + origen.getNombre() + " hasta " + destino.getNombre() + ".");
    }
-   
+
    public Map<Paradas, List<Rutas>> getGrafo() {
       return grafo;
    }
-
 }

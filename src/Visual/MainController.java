@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,51 +48,23 @@ public class MainController {
    
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
    private final ObservableList<Rutas> listaRutas = FXCollections.observableArrayList();
-   
-   private int nextIdParada = 1;
-   
+
+   private int nextIdParada = Database.obtenerSiguienteIdParada();
    @FXML
    public void initialize() {
-      inicializarDatosEjemplo();
-      actualizarCombos();
-      
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
-      
-      areaResultado.setText("Selecciona un origen, destino y criterio para buscar la mejor ruta.");
-      dibujarMapa();
-   }
-   
-   private void inicializarDatosEjemplo() {
-      Paradas p1 = new Paradas(nextIdParada++, "PUCMM");
-      Paradas p2 = new Paradas(nextIdParada++, "Centro Olímpico");
-      Paradas p3 = new Paradas(nextIdParada++, "UASD");
-      Paradas p4 = new Paradas(nextIdParada++, "Ágora Mall");
-      Paradas p5 = new Paradas(nextIdParada++, "BlueMall");
-      
-      sistema.agregarParada(p1);
-      sistema.agregarParada(p2);
-      sistema.agregarParada(p3);
-      sistema.agregarParada(p4);
-      sistema.agregarParada(p5);
-      
-      sistema.agregarRuta(p1, p2, 5, 9, 45, 0);
-      sistema.agregarRuta(p2, p3, 5, 9, 45, 1);
-      
-      sistema.agregarRuta(p1, p4, 10, 3, 30, 0);
-      sistema.agregarRuta(p4, p3, 10, 3, 30, 0);
-      
-      sistema.agregarRuta(p1, p5, 8, 7, 8, 0);
-      sistema.agregarRuta(p5, p3, 8, 7, 8, 1);
-      
-      sistema.agregarRuta(p2, p4, 4, 2, 12, 0);
-      sistema.agregarRuta(p4, p5, 3, 2, 6, 0);
-      sistema.agregarRuta(p5, p4, 3, 2, 6, 0);
-      
+
       listaParadas.setAll(sistema.getGrafo().keySet());
-      actualizarListaRutas();
+      actualizarCombos();
+
+      areaResultado.setText("Selecciona un origen, destino y criterio para buscar la mejor ruta.");
+
+      Platform.runLater(() -> {
+         dibujarMapa();
+      });
    }
-   
+
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
       comboDestino.setItems(listaParadas);
