@@ -1,11 +1,13 @@
 package Visual;
 
 import Logico.*;
-import com.brunomnsilva.smartgraph.graph.Digraph;
-import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
-import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
-import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
-import com.brunomnsilva.smartgraph.graphview.SmartRandomPlacementStrategy;
+
+import com.brunomnsilva.smartgraph.graph.Digraph; // interfaz de grafo dirigido
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList; //implementación del grafo dirigido
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel; //panel visual que dibuja el grafo
+import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;//estrategia para colocar nodos
+import com.brunomnsilva.smartgraph.graphview.SmartRandomPlacementStrategy;//coloca nodos inicialmente de forma aleatoria
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,7 +41,7 @@ public class MainController {
    private TextArea areaResultado;
    
    @FXML
-   private StackPane contenedorMapa;
+   private StackPane contenedorMapa; // Es el contenedor donde se inserta el panel de SmartGraph.
    
    @FXML
    private HBox leyendaRutas;
@@ -171,8 +173,6 @@ public class MainController {
     * Antes de guardar, valida que ambos campos no estén vacíos.
     * Si la modificación es correcta, actualiza el sistema y refresca el grafo
     * sin reconstruir completamente la visualización.
-    *
-    * @param paradaSeleccionada parada que el usuario desea modificar.
     */
    private void mostrarVentanaModificarParada(Paradas paradaSeleccionada) {
       Stage ventana = new Stage();
@@ -463,7 +463,6 @@ public class MainController {
     * El usuario elige la parada destino de la ruta que desea borrar.
     * Se valida que se haya escogido un destino válido y diferente del origen.
     * Luego se elimina la ruta y se actualiza el grafo visual.
-    * @param origenFijo parada origen desde la cual se desea eliminar una ruta.
     */
    private void mostrarVentanaEliminarRutaDesde(Paradas origenFijo) {
       Stage ventana = new Stage();
@@ -691,52 +690,6 @@ public class MainController {
    }
    
    /**
-    * Restablece el estilo visual por defecto de todos los vértices y aristas del grafo.
-    * Se usa antes de volver a pintar rutas nuevas para evitar que queden resaltados
-    * de búsquedas anteriores.
-    */
-   private void limpiarEstilosGrafo() {
-      if (graphView == null) return;
-      
-      for (Paradas p : sistema.getGrafo().keySet()) {
-         graphView.getStylableVertex(p).setStyleClass("vertex");
-      }
-      
-      for (Paradas origen : sistema.getGrafo().keySet()) {
-         for (Rutas r : sistema.getGrafo().get(origen)) {
-            graphView.getStylableEdge(r).setStyleClass("edge");
-         }
-      }
-   }
-   
-   /**
-    * Pinta una ruta cualquiera en el grafo con las clases CSS indicadas.
-    * Este método es reutilizable para la ruta principal y para las rutas alternativas.
-    * Aplica una clase a los vértices del camino y otra a las aristas entre paradas consecutivas.
-    */
-   private void pintarRuta(List<Paradas> camino, String claseVertex, String claseEdge) {
-      if (camino == null || camino.isEmpty() || graphView == null) {
-         return;
-      }
-      
-      for (Paradas p : camino) {
-         graphView.getStylableVertex(p).setStyleClass(claseVertex);
-      }
-      
-      for (int i = 0; i < camino.size() - 1; i++) {
-         Paradas a = camino.get(i);
-         Paradas b = camino.get(i + 1);
-         
-         for (Rutas r : sistema.getGrafo().get(a)) {
-            if (r.getDestino().equals(b)) {
-               graphView.getStylableEdge(r).setStyleClass(claseEdge);
-               break;
-            }
-         }
-      }
-   }
-   
-   /**
     * Muestra en el mapa la ruta principal y las rutas alternativas.
     * La ruta principal se dibuja con el estilo principal y las demás rutas,
     * calculadas con criterios distintos, se dibujan con estilos alternativos.
@@ -772,6 +725,52 @@ public class MainController {
       }
       
       resaltarOrigenDestino(origen, destino);
+   }
+   
+   /**
+    * Restablece el estilo visual por defecto de todos los vértices y aristas del grafo.
+    * Se usa antes de volver a pintar rutas nuevas para evitar que queden resaltados
+    * de búsquedas anteriores.
+    */
+   private void limpiarEstilosGrafo() {
+      if (graphView == null) return;
+      
+      for (Paradas p : sistema.getGrafo().keySet()) {
+         graphView.getStylableVertex(p).setStyleClass("vertex");
+      }
+      
+      for (Paradas origen : sistema.getGrafo().keySet()) {
+         for (Rutas r : sistema.getGrafo().get(origen)) {
+            graphView.getStylableEdge(r).setStyleClass("edge");
+         }
+      }
+   }
+   
+   /**
+    * Pinta una ruta cualquiera en el grafo con las clases CSS indicadas.
+    * Este metodo es reutilizable para la ruta principal y para las rutas alternativas.
+    * Aplica una clase a los vértices del camino y otra a las aristas entre paradas consecutivas.
+    */
+   private void pintarRuta(List<Paradas> camino, String claseVertex, String claseEdge) {
+      if (camino == null || camino.isEmpty() || graphView == null) {
+         return;
+      }
+      
+      for (Paradas p : camino) {
+         graphView.getStylableVertex(p).setStyleClass(claseVertex);
+      }
+      
+      for (int i = 0; i < camino.size() - 1; i++) {
+         Paradas a = camino.get(i);
+         Paradas b = camino.get(i + 1);
+         
+         for (Rutas r : sistema.getGrafo().get(a)) {
+            if (r.getDestino().equals(b)) {
+               graphView.getStylableEdge(r).setStyleClass(claseEdge);
+               break;
+            }
+         }
+      }
    }
    
    /**
@@ -825,10 +824,6 @@ public class MainController {
     * Genera un texto con las rutas calculadas para los distintos criterios.
     * Se usa para mostrar al usuario un resumen completo de las alternativas
     * por tiempo, costo y transbordo, usando el mismo algoritmo seleccionado.
-    * @param origen parada inicial.
-    * @param destino parada final.
-    * @param algoritmo algoritmo con el que se evaluarán los criterios.
-    * @return cadena de texto con el resumen de todas las rutas alternativas.
     */
    private String obtenerRutasAlternativas(Paradas origen, Paradas destino, AlgoritmoRuta algoritmo) {
       StringBuilder sb = new StringBuilder();
@@ -855,9 +850,9 @@ public class MainController {
    }
    
    /**
-    * Método conectado desde la vista para abrir la ventana de agregar parada.
+    * Metodo conectado desde la vista para abrir la ventana de agregar parada.
     * Se deja separado para que el evento del botón en FXML sea simple
-    * y delegue la lógica visual al método correspondiente.
+    * y delegue la lógica visual al metodo correspondiente.
     */
    @FXML
    private void agregarParada() {
