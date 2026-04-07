@@ -151,3 +151,19 @@ This should help you understand which styles you can apply to each type of eleme
     -fx-opacity: 1;
     -fx-fill: transparent;
 }
+
+.origenVertex {
+    -fx-stroke-width: 5;
+    -fx-stroke: #1B5E20;
+    -fx-stroke-type: inside;
+    -fx-fill: #4CAF50;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.25, 0, 4);
+}
+
+.destinoVertex {
+    -fx-stroke-width: 5;
+    -fx-stroke: #B71C1C;
+    -fx-stroke-type: inside;
+    -fx-fill: #EF5350;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.25, 0, 4);
+}

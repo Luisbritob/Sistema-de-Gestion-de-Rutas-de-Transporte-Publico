@@ -11,9 +11,8 @@ public class Mainfx extends Application {
    @Override
    public void start(Stage stage) throws Exception {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/Visual/MainView.fxml"));
-      Scene scene = new Scene(loader.load());
-
-      stage.setTitle("RouteFinder");
+      Scene scene = new Scene(loader.load(), 1200, 800);
+      
       stage.setScene(scene);
       stage.show();
    }

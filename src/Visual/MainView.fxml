@@ -6,93 +6,53 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="Visual.MainController">
 
-    <!-- PARTE SUPERIOR -->
+    <!-- 🔝 BARRA SUPERIOR -->
     <top>
-        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 15; -fx-background-color: #0F1C3F;">
+        <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #DDE3EA;">
 
-            <Label text="SISTEMA DE RUTAS"
-                   style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
+            <ComboBox fx:id="comboOrigen" promptText="Origen" prefWidth="150"/>
+            <ComboBox fx:id="comboDestino" promptText="Destino" prefWidth="150"/>
 
-            <HBox spacing="10" alignment="CENTER">
+            <ComboBox fx:id="comboCriterio" prefWidth="140"/>
+            <ComboBox fx:id="comboAlgoritmo" prefWidth="160"/>
 
-                <ComboBox fx:id="comboOrigen" promptText="Origen" prefWidth="150"/>
-                <ComboBox fx:id="comboDestino" promptText="Destino" prefWidth="150"/>
-                <ComboBox fx:id="comboCriterio" promptText="Criterio" prefWidth="150"/>
-                <ComboBox fx:id="comboAlgoritmo" promptText="Algoritmo" prefWidth="150"/>
+            <Button text="Buscar ruta"
+                    onAction="#buscarRuta"
+                    style="-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-weight: bold;"/>
 
-                <Button text="Buscar Ruta"
-                        onAction="#buscarRuta"
-                        style="-fx-background-color: #1E88E5; -fx-text-fill: white; -fx-font-weight: bold;"/>
-            </HBox>
-        </VBox>
-    </top>
-
-    <!-- CENTRO (MAPA) -->
-    <center>
-        <StackPane fx:id="contenedorMapa"
-                   style="
-           -fx-background-color: #E3F2FD;
-           -fx-background-image: url('/Recursos/mapa.png');
-           -fx-background-size: cover;
-           -fx-background-repeat: no-repeat;
-           -fx-background-position: center;
-           -fx-border-color: #90A4AE;
-           -fx-border-width: 2;
-           "/>
-    </center>
-
-    <!-- PARTE DERECHA (RESULTADOS) -->
-    <right>
-        <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: #CFD8DC;">
-
-            <Label text="RESULTADO"
-                   style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-
-            <TextArea fx:id="areaResultado"
-                      wrapText="true"
-                      prefWidth="300"
-                      prefHeight="400"/>
-        </VBox>
-    </right>
-
-    <!-- PARTE INFERIOR (LEYENDA) -->
-    <bottom>
-        <HBox fx:id="leyendaRutas"
-              spacing="20"
-              alignment="CENTER_LEFT"
-              style="-fx-padding: 10; -fx-background-color: #EEEEEE;"
-              visible="false"
-              managed="false">
-
-            <!-- Ruta principal -->
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label minWidth="18" minHeight="18"
-                       style="-fx-background-color: #1E88E5; -fx-border-color: black;" />
-                <Label text="Ruta principal" />
-            </HBox>
-
-            <!-- Tiempo -->
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label minWidth="18" minHeight="18"
-                       style="-fx-background-color: #2E7D32; -fx-border-color: black;" />
-                <Label text="Alternativa (Tiempo)" />
-            </HBox>
-
-            <!-- Costo -->
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label minWidth="18" minHeight="18"
-                       style="-fx-background-color: #F57C00; -fx-border-color: black;" />
-                <Label text="Alternativa (Costo)" />
-            </HBox>
-
-            <!-- Transbordo -->
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label minWidth="18" minHeight="18"
-                       style="-fx-background-color: #6A1B9A; -fx-border-color: black;" />
-                <Label text="Alternativa (Transbordo)" />
-            </HBox>
+            <!-- 🔥 BOTÓN NUEVO -->
+            <Button text="Agregar parada"
+                    onAction="#agregarParada"
+                    style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold;"/>
 
         </HBox>
+    </top>
+
+    <!-- 🗺️ MAPA -->
+    <center>
+        <StackPane fx:id="contenedorMapa"
+                   minHeight="450"
+                   prefHeight="550"
+                   style="-fx-background-color: #E3F2FD;"/>
+    </center>
+
+    <!-- 📊 RESULTADOS -->
+    <bottom>
+        <VBox spacing="10" style="-fx-padding: 10;">
+
+            <TextArea fx:id="areaResultado"
+                      prefHeight="140"
+                      wrapText="true"/>
+
+            <!-- Leyenda de rutas -->
+            <HBox fx:id="leyendaRutas" spacing="15" alignment="CENTER">
+                <Label text="Ruta principal" style="-fx-text-fill: blue;"/>
+                <Label text="Tiempo" style="-fx-text-fill: green;"/>
+                <Label text="Costo" style="-fx-text-fill: orange;"/>
+                <Label text="Transbordo" style="-fx-text-fill: purple;"/>
+            </HBox>
+
+        </VBox>
     </bottom>
 
 </BorderPane>
