@@ -79,6 +79,7 @@ public class SistemaGrafos {
    //Elimina una ruta del grafo y de la base de datos.
    public void eliminarRuta(Paradas origen, Paradas destino) {
       List<Rutas> rutas = grafo.get(origen);
+      if (rutas == null) return;
       rutas.removeIf(r -> r.getDestino().equals(destino));
       Database.eliminarRuta(origen, destino);
    }
@@ -86,6 +87,7 @@ public class SistemaGrafos {
    //Modifica una ruta en memoria y en la base de datos.
    public void modificarRuta(Paradas origen, Paradas destino, double nuevoTiempo, double nuevaDistancia, double nuevoCosto, int nuevoTransbordo) {
       List<Rutas> rutas = grafo.get(origen);
+      if (rutas == null) return;
       for (Rutas r : rutas) {
          if (r.getDestino().equals(destino)) {
             r.setTiempo(nuevoTiempo);

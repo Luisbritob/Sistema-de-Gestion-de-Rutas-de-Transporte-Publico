@@ -1,6 +1,10 @@
 package Visual;
 
 import Logico.*;
+import com.brunomnsilva.smartgraph.graph.Digraph;
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
+import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
 import com.brunomnsilva.smartgraph.graphview.SmartRandomPlacementStrategy;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,11 +20,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.List;
-
-import com.brunomnsilva.smartgraph.graph.Digraph;
-import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
-import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
-import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
 
 public class MainController {
    
@@ -47,17 +46,21 @@ public class MainController {
    
    private final SistemaGrafos sistema = new SistemaGrafos();
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
-   private RutaResultado ultimaRutaResultado;
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
-   private final ObservableList<Rutas> listaRutas = FXCollections.observableArrayList();
    
    private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
    
+   /**
+    * Inicializa la interfaz principal al cargar el controlador.
+    *
+    * Aquí se cargan las paradas disponibles, se llenan los ComboBox,
+    * se establecen valores por defecto para criterio y algoritmo,
+    * se oculta la leyenda de rutas alternativas y se construye el grafo visual.
+    */
    @FXML
    public void initialize() {
       listaParadas.setAll(sistema.getGrafo().keySet());
-      actualizarListaRutas();
       actualizarCombos();
       
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
@@ -76,6 +79,14 @@ public class MainController {
       inicializarSmartGraph();
    }
    
+   /**
+    * Construye el grafo visual a partir de la información almacenada en el sistema.
+    *
+    * Inserta todas las paradas como vértices y todas las rutas como aristas.
+    * Luego crea el panel visual del grafo, aplica el archivo CSS si existe,
+    * lo coloca dentro del contenedor del mapa y finalmente inicializa la interacción
+    * gráfica con JavaFX.
+    */
    private void inicializarSmartGraph() {
       digraph = new DigraphEdgeList<>();
       
@@ -110,6 +121,13 @@ public class MainController {
       });
    }
    
+   /**
+    * Configura la interacción del usuario con las paradas del grafo.
+    *
+    * Cuando el usuario hace doble clic sobre una parada,
+    * se abre una ventana con opciones para modificar la parada,
+    * eliminarla, agregar una ruta desde ella o eliminar una ruta existente.
+    */
    private void configurarInteraccionParadas() {
       graphView.setVertexDoubleClickAction(graphVertex -> {
          Paradas parada = graphVertex.getUnderlyingVertex().element();
@@ -122,6 +140,7 @@ public class MainController {
          ButtonType btnModificar = new ButtonType("Modificar parada");
          ButtonType btnEliminar = new ButtonType("Eliminar parada");
          ButtonType btnAgregarRuta = new ButtonType("Agregar ruta");
+         ButtonType btnModificarRuta = new ButtonType("Modificar ruta");
          ButtonType btnEliminarRuta = new ButtonType("Eliminar ruta");
          ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
          
@@ -129,6 +148,7 @@ public class MainController {
                  btnModificar,
                  btnEliminar,
                  btnAgregarRuta,
+                 btnModificarRuta,
                  btnEliminarRuta,
                  btnCancelar
          );
@@ -140,6 +160,8 @@ public class MainController {
                mostrarVentanaEliminarParada(parada);
             } else if (respuesta == btnAgregarRuta) {
                mostrarVentanaAgregarRutaDesde(parada);
+            } else if (respuesta == btnModificarRuta) {
+                  mostrarVentanaModificarRuta(parada);
             } else if (respuesta == btnEliminarRuta) {
                mostrarVentanaEliminarRutaDesde(parada);
             }
@@ -147,7 +169,17 @@ public class MainController {
       });
    }
    
-   private void mostrarVentanaModificarParada(Paradas paradaSeleccionadaInicial) {
+   /**
+    * Muestra una ventana para editar los datos de una parada existente.
+    *
+    * Permite cambiar el nombre y la localización de la parada seleccionada.
+    * Antes de guardar, valida que ambos campos no estén vacíos.
+    * Si la modificación es correcta, actualiza el sistema y refresca el grafo
+    * sin reconstruir completamente la visualización.
+    *
+    * @param paradaSeleccionada parada que el usuario desea modificar.
+    */
+   private void mostrarVentanaModificarParada(Paradas paradaSeleccionada) {
       Stage ventana = new Stage();
       ventana.setTitle("Modificar Parada");
       
@@ -159,14 +191,14 @@ public class MainController {
       Label lblTitulo = new Label("MODIFICAR PARADA");
       lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
       
-      Label lblParada = new Label("Parada: " + paradaSeleccionadaInicial.getNombre());
+      Label lblParada = new Label("Parada: " + paradaSeleccionada.getNombre());
       lblParada.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
       
-      TextField txtNuevoNombre = new TextField(paradaSeleccionadaInicial.getNombre());
+      TextField txtNuevoNombre = new TextField(paradaSeleccionada.getNombre());
       txtNuevoNombre.setPromptText("Nuevo nombre de la parada");
       txtNuevoNombre.setPrefWidth(300);
       
-      TextField txtNuevaLocalizacion = new TextField(paradaSeleccionadaInicial.getLocalizacion());
+      TextField txtNuevaLocalizacion = new TextField(paradaSeleccionada.getLocalizacion());
       txtNuevaLocalizacion.setPromptText("Nueva localización de la parada");
       txtNuevaLocalizacion.setPrefWidth(300);
       
@@ -181,7 +213,7 @@ public class MainController {
             return;
          }
          
-         sistema.modificarParada(paradaSeleccionadaInicial, nuevoNombre, nuevaLocalizacion);
+         sistema.modificarParada(paradaSeleccionada, nuevoNombre, nuevaLocalizacion);
          refrescarSinReiniciarGrafo();
          
          areaResultado.setText("Parada modificada correctamente:\nNuevo nombre: " + nuevoNombre +
@@ -204,6 +236,111 @@ public class MainController {
       ventana.show();
    }
    
+   private void mostrarVentanaModificarRuta(Paradas origenFijo) {
+      Stage ventana = new Stage();
+      ventana.setTitle("Modificar Ruta");
+      
+      VBox root = new VBox(15);
+      root.setAlignment(Pos.CENTER);
+      root.setPadding(new Insets(25));
+      root.setStyle("-fx-background-color: #A7B3BF;");
+      
+      Label lblTitulo = new Label("MODIFICAR RUTA");
+      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+      
+      Label lblOrigen = new Label("Origen: " + origenFijo.getNombre());
+      lblOrigen.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+      
+      ComboBox<Paradas> comboDestinoVentana = new ComboBox<>(listaParadas);
+      comboDestinoVentana.setPromptText("Selecciona destino");
+      comboDestinoVentana.setPrefWidth(280);
+      
+      TextField txtTiempo = new TextField();
+      txtTiempo.setPromptText("Nuevo tiempo");
+      
+      TextField txtDistancia = new TextField();
+      txtDistancia.setPromptText("Nueva distancia");
+      
+      TextField txtCosto = new TextField();
+      txtCosto.setPromptText("Nuevo costo");
+      
+      TextField txtTransbordos = new TextField();
+      txtTransbordos.setPromptText("Nuevos transbordos");
+      
+      Button btnModificar = new Button("Modificar");
+      btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+      
+      btnModificar.setOnAction(e -> {
+         Paradas destino = comboDestinoVentana.getValue();
+         
+         if (destino == null) {
+            mostrarAlerta("Error", "Debes seleccionar destino.");
+            return;
+         }
+         
+         if (origenFijo.equals(destino)) {
+            mostrarAlerta("Error", "Origen y destino no pueden ser iguales.");
+            return;
+         }
+         
+         try {
+            double tiempo = Double.parseDouble(txtTiempo.getText().trim());
+            double distancia = Double.parseDouble(txtDistancia.getText().trim());
+            double costo = Double.parseDouble(txtCosto.getText().trim());
+            int transbordos = Integer.parseInt(txtTransbordos.getText().trim());
+            
+            if (tiempo < 0 || distancia < 0 || costo < 0 || transbordos < 0) {
+               mostrarAlerta("Error", "Los valores no pueden ser negativos.");
+               return;
+            }
+            
+            // 🔥 AQUÍ USAS TU MÉTODO
+            sistema.modificarRuta(origenFijo, destino, tiempo, distancia, costo, transbordos);
+            
+            refrescarSinReiniciarGrafo();
+            
+            areaResultado.setText("Ruta modificada:\n" +
+                    origenFijo.getNombre() + " -> " + destino.getNombre());
+            
+            mostrarAlerta("Éxito", "Ruta modificada correctamente.");
+            ventana.close();
+            
+         } catch (NumberFormatException ex) {
+            mostrarAlerta("Error", "Todos los valores deben ser numéricos.");
+         }
+      });
+      
+      Button btnCancelar = new Button("Cancelar");
+      btnCancelar.setOnAction(e -> ventana.close());
+      
+      HBox botones = new HBox(15, btnModificar, btnCancelar);
+      botones.setAlignment(Pos.CENTER);
+      
+      root.getChildren().addAll(
+              lblTitulo,
+              lblOrigen,
+              comboDestinoVentana,
+              txtTiempo,
+              txtDistancia,
+              txtCosto,
+              txtTransbordos,
+              botones
+      );
+      
+      Scene scene = new Scene(root, 450, 500);
+      ventana.setScene(scene);
+      ventana.show();
+   }
+   
+   /**
+    * Muestra una confirmación para eliminar una parada del sistema.
+    *
+    * Si el usuario confirma, la parada se elimina tanto del sistema lógico
+    * como de la interfaz. Además, limpia la selección si la parada eliminada
+    * estaba escogida como origen o destino.
+    *
+    * @param paradaSeleccionada parada que se desea eliminar.
+    */
    private void mostrarVentanaEliminarParada(Paradas paradaSeleccionada) {
       Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
       confirmacion.setTitle("Eliminar Parada");
@@ -229,6 +366,15 @@ public class MainController {
       });
    }
    
+   /**
+    * Muestra una ventana para agregar una nueva ruta saliendo desde una parada fija.
+    *
+    * El usuario selecciona el destino e introduce tiempo, distancia, costo y cantidad
+    * de transbordos. Se valida que el destino exista, que no sea el mismo origen,
+    * que los valores sean numéricos y que no sean negativos.
+    *
+    * @param origenFijo parada desde la cual saldrá la nueva ruta.
+    */
    private void mostrarVentanaAgregarRutaDesde(Paradas origenFijo) {
       Stage ventana = new Stage();
       ventana.setTitle("Agregar Ruta");
@@ -324,6 +470,15 @@ public class MainController {
       ventana.show();
    }
    
+   /**
+    * Muestra una ventana para eliminar una ruta que sale desde una parada fija.
+    *
+    * El usuario elige la parada destino de la ruta que desea borrar.
+    * Se valida que se haya escogido un destino válido y diferente del origen.
+    * Luego se elimina la ruta y se actualiza el grafo visual.
+    *
+    * @param origenFijo parada origen desde la cual se desea eliminar una ruta.
+    */
    private void mostrarVentanaEliminarRutaDesde(Paradas origenFijo) {
       Stage ventana = new Stage();
       ventana.setTitle("Eliminar Ruta");
@@ -382,8 +537,14 @@ public class MainController {
       ventana.show();
    }
    
+   /**
+    * Refresca los datos mostrados en pantalla sin reconstruir completamente el grafo.
+    *
+    * Esta opción es útil cuando la estructura general del grafo sigue siendo válida,
+    * pero se necesita actualizar la lista de paradas y redibujar la visualización.
+    */
    private void refrescarSinReiniciarGrafo() {
-      actualizarListaRutas();
+      listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarCombos();
       
       if (graphView != null) {
@@ -391,28 +552,36 @@ public class MainController {
       }
    }
    
+   /**
+    * Recarga los datos desde la base de datos y reconstruye por completo el grafo visual.
+    *
+    * Se usa cuando la estructura del sistema cambia de manera importante,
+    * por ejemplo al eliminar o agregar una parada, y se necesita reconstruir
+    * la visualización desde cero.
+    */
    private void refrescarDesdeDB() {
       sistema.recargarDatos();
-      
       listaParadas.setAll(sistema.getGrafo().keySet());
-      actualizarListaRutas();
       actualizarCombos();
-      
       inicializarSmartGraph();
    }
    
+   /**
+    * Actualiza los ComboBox de origen y destino con la lista actual de paradas.
+    *
+    * Esto mantiene sincronizada la interfaz con el estado real del sistema.
+    */
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
       comboDestino.setItems(listaParadas);
    }
    
-   private void actualizarListaRutas() {
-      listaRutas.clear();
-      for (Paradas parada : sistema.getGrafo().keySet()) {
-         listaRutas.addAll(sistema.getGrafo().get(parada));
-      }
-   }
-   
+   /**
+    * Muestra una alerta informativa reutilizable.
+    *
+    * @param titulo título de la ventana de alerta.
+    * @param mensaje contenido principal que verá el usuario.
+    */
    private void mostrarAlerta(String titulo, String mensaje) {
       Alert alert = new Alert(Alert.AlertType.INFORMATION);
       alert.setTitle(titulo);
@@ -421,6 +590,18 @@ public class MainController {
       alert.showAndWait();
    }
    
+   /**
+    * Calcula una ruta según el algoritmo seleccionado por el usuario.
+    *
+    * Encapsula la lógica de selección del algoritmo para evitar repetir
+    * condicionales en otros métodos del controlador.
+    *
+    * @param origen parada de inicio.
+    * @param destino parada final.
+    * @param criterio criterio de optimización de la ruta.
+    * @param algoritmo algoritmo escogido para el cálculo.
+    * @return el resultado de la ruta calculada, exitoso o no.
+    */
    private RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
       switch (algoritmo) {
          case BELLMAN_FORD:
@@ -433,6 +614,13 @@ public class MainController {
       }
    }
    
+   /**
+    * Busca la mejor ruta entre dos paradas según el criterio y el algoritmo escogidos.
+    *
+    * Primero valida que todos los datos requeridos estén seleccionados y que
+    * origen y destino sean distintos. Luego calcula la ruta, muestra el resumen
+    * en el área de resultados y resalta visualmente el camino encontrado en el mapa.
+    */
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
@@ -453,9 +641,7 @@ public class MainController {
       RutaResultado resultado = calcularSegunAlgoritmo(origen, destino, criterio, algoritmo);
       
       if (!resultado.isExitoso()) {
-         ultimaRutaResultado = null;
          areaResultado.setText(resultado.getMensaje());
-         
          limpiarEstilosGrafo();
          
          if (leyendaRutas != null) {
@@ -464,8 +650,6 @@ public class MainController {
          }
          return;
       }
-      
-      ultimaRutaResultado = resultado;
       
       areaResultado.setText(
               "Algoritmo usado: " + algoritmo + "\n\n" +
@@ -482,6 +666,14 @@ public class MainController {
       }
    }
    
+   /**
+    * Calcula y muestra la ruta principal junto con rutas alternativas.
+    *
+    * La ruta principal se calcula usando el criterio seleccionado por el usuario,
+    * mientras que las alternativas se calculan usando los demás criterios disponibles.
+    * Además de mostrar la información textual, pinta cada ruta en el mapa con estilos
+    * diferentes y habilita la leyenda correspondiente.
+    */
    @FXML
    private void verRutasAlternativas() {
       Paradas origen = comboOrigen.getValue();
@@ -510,8 +702,6 @@ public class MainController {
          return;
       }
       
-      ultimaRutaResultado = principal;
-      
       mostrarRutasAlternativasEnMapa(origen, destino, criterio, algoritmo);
       
       areaResultado.setText(
@@ -529,6 +719,12 @@ public class MainController {
       }
    }
    
+   /**
+    * Restablece el estilo visual por defecto de todos los vértices y aristas del grafo.
+    *
+    * Se usa antes de volver a pintar rutas nuevas para evitar que queden resaltados
+    * de búsquedas anteriores.
+    */
    private void limpiarEstilosGrafo() {
       if (graphView == null) return;
       
@@ -543,6 +739,16 @@ public class MainController {
       }
    }
    
+   /**
+    * Pinta una ruta cualquiera en el grafo con las clases CSS indicadas.
+    *
+    * Este método es reutilizable para la ruta principal y para las rutas alternativas.
+    * Aplica una clase a los vértices del camino y otra a las aristas entre paradas consecutivas.
+    *
+    * @param camino lista ordenada de paradas que forman la ruta.
+    * @param claseVertex nombre de la clase CSS para los vértices.
+    * @param claseEdge nombre de la clase CSS para las aristas.
+    */
    private void pintarRuta(List<Paradas> camino, String claseVertex, String claseEdge) {
       if (camino == null || camino.isEmpty() || graphView == null) {
          return;
@@ -565,6 +771,18 @@ public class MainController {
       }
    }
    
+   /**
+    * Muestra en el mapa la ruta principal y las rutas alternativas.
+    *
+    * La ruta principal se dibuja con el estilo principal y las demás rutas,
+    * calculadas con criterios distintos, se dibujan con estilos alternativos.
+    * Finalmente, se vuelven a destacar visualmente el origen y el destino.
+    *
+    * @param origen parada de inicio.
+    * @param destino parada de llegada.
+    * @param criterioPrincipal criterio seleccionado como principal.
+    * @param algoritmo algoritmo usado para todos los cálculos.
+    */
    private void mostrarRutasAlternativasEnMapa(Paradas origen, Paradas destino, CriterioRuta criterioPrincipal, AlgoritmoRuta algoritmo) {
       limpiarEstilosGrafo();
       
@@ -597,6 +815,15 @@ public class MainController {
       resaltarOrigenDestino(origen, destino);
    }
    
+   /**
+    * Resalta una ruta específica como la ruta principal.
+    *
+    * Primero limpia los estilos existentes para evitar superposición visual.
+    * Luego pinta las paradas del camino y las aristas entre ellas con las clases
+    * principales definidas en el CSS.
+    *
+    * @param camino lista ordenada de paradas que forman la ruta a resaltar.
+    */
    private void resaltarRuta(List<Paradas> camino) {
       if (camino == null || camino.isEmpty() || graphView == null) {
          return;
@@ -621,6 +848,15 @@ public class MainController {
       }
    }
    
+   /**
+    * Destaca visualmente la parada de origen y la de destino.
+    *
+    * Esto ayuda al usuario a identificar rápidamente desde dónde inicia
+    * y dónde termina la búsqueda realizada.
+    *
+    * @param origen parada inicial de la búsqueda.
+    * @param destino parada final de la búsqueda.
+    */
    private void resaltarOrigenDestino(Paradas origen, Paradas destino) {
       if (graphView == null) return;
       
@@ -633,6 +869,17 @@ public class MainController {
       }
    }
    
+   /**
+    * Genera un texto con las rutas calculadas para los distintos criterios.
+    *
+    * Se usa para mostrar al usuario un resumen completo de las alternativas
+    * por tiempo, costo y transbordo, usando el mismo algoritmo seleccionado.
+    *
+    * @param origen parada inicial.
+    * @param destino parada final.
+    * @param algoritmo algoritmo con el que se evaluarán los criterios.
+    * @return cadena de texto con el resumen de todas las rutas alternativas.
+    */
    private String obtenerRutasAlternativas(Paradas origen, Paradas destino, AlgoritmoRuta algoritmo) {
       StringBuilder sb = new StringBuilder();
       
@@ -657,120 +904,24 @@ public class MainController {
       return sb.toString();
    }
    
+   /**
+    * Método conectado desde la vista para abrir la ventana de agregar parada.
+    *
+    * Se deja separado para que el evento del botón en FXML sea simple
+    * y delegue la lógica visual al método correspondiente.
+    */
    @FXML
-   private void rutas() {
-      mostrarVentanaRutas();
+   private void agregarParada() {
+      mostrarVentanaAgregarParada();
    }
    
-   @FXML
-   private void paradas() {
-      mostrarVentanaParadas();
-   }
-   
-   private void mostrarVentanaRutas() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Opciones de Rutas");
-      
-      VBox root = new VBox(20);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label titulo = new Label("GESTIÓN DE RUTAS");
-      titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      Button btnAgregar = new Button("Agregar ruta");
-      btnAgregar.setPrefWidth(220);
-      btnAgregar.setPrefHeight(45);
-      btnAgregar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnAgregar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaAgregarRuta();
-      });
-      
-      Button btnModificar = new Button("Modificar ruta");
-      btnModificar.setPrefWidth(220);
-      btnModificar.setPrefHeight(45);
-      btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnModificar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaModificarRuta();
-      });
-      
-      Button btnEliminar = new Button("Eliminar ruta");
-      btnEliminar.setPrefWidth(220);
-      btnEliminar.setPrefHeight(45);
-      btnEliminar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnEliminar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaEliminarRuta();
-      });
-      
-      Button btnCerrar = new Button("Cerrar");
-      btnCerrar.setPrefWidth(220);
-      btnCerrar.setPrefHeight(40);
-      btnCerrar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
-      btnCerrar.setOnAction(e -> ventana.close());
-      
-      root.getChildren().addAll(titulo, btnAgregar, btnModificar, btnEliminar, btnCerrar);
-      
-      Scene scene = new Scene(root, 380, 330);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaParadas() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Opciones de Paradas");
-      
-      VBox root = new VBox(20);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label titulo = new Label("GESTIÓN DE PARADAS");
-      titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      Button btnAgregar = new Button("Agregar parada");
-      btnAgregar.setPrefWidth(220);
-      btnAgregar.setPrefHeight(45);
-      btnAgregar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnAgregar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaAgregarParada();
-      });
-      
-      Button btnModificar = new Button("Modificar parada");
-      btnModificar.setPrefWidth(220);
-      btnModificar.setPrefHeight(45);
-      btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnModificar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaModificarParada();
-      });
-      
-      Button btnEliminar = new Button("Eliminar parada");
-      btnEliminar.setPrefWidth(220);
-      btnEliminar.setPrefHeight(45);
-      btnEliminar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-      btnEliminar.setOnAction(e -> {
-         ventana.close();
-         mostrarVentanaEliminarParada();
-      });
-      
-      Button btnCerrar = new Button("Cerrar");
-      btnCerrar.setPrefWidth(220);
-      btnCerrar.setPrefHeight(40);
-      btnCerrar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
-      btnCerrar.setOnAction(e -> ventana.close());
-      
-      root.getChildren().addAll(titulo, btnAgregar, btnModificar, btnEliminar, btnCerrar);
-      
-      Scene scene = new Scene(root, 380, 330);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
+   /**
+    * Muestra una ventana para registrar una nueva parada en el sistema.
+    *
+    * Solicita nombre y localización, valida que ambos campos estén completos,
+    * crea la nueva instancia de Paradas con un ID generado desde la base de datos,
+    * la agrega al sistema y reconstruye la interfaz para reflejar el cambio.
+    */
    private void mostrarVentanaAgregarParada() {
       Stage ventana = new Stage();
       ventana.setTitle("Agregar Parada");
@@ -830,527 +981,5 @@ public class MainController {
       Scene scene = new Scene(root, 500, 360);
       ventana.setScene(scene);
       ventana.show();
-   }
-   
-   private void mostrarVentanaAgregarRuta() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Agregar Ruta");
-      
-      VBox root = new VBox(15);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label lblTitulo = new Label("AGREGAR NUEVA RUTA");
-      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      ComboBox<Paradas> comboOrigenVentana = new ComboBox<>(listaParadas);
-      comboOrigenVentana.setPromptText("Selecciona origen");
-      comboOrigenVentana.setPrefWidth(280);
-      
-      ComboBox<Paradas> comboDestinoVentana = new ComboBox<>(listaParadas);
-      comboDestinoVentana.setPromptText("Selecciona destino");
-      comboDestinoVentana.setPrefWidth(280);
-      
-      TextField txtTiempo = new TextField();
-      txtTiempo.setPromptText("Tiempo");
-      txtTiempo.setPrefWidth(280);
-      
-      TextField txtDistancia = new TextField();
-      txtDistancia.setPromptText("Distancia");
-      txtDistancia.setPrefWidth(280);
-      
-      TextField txtCosto = new TextField();
-      txtCosto.setPromptText("Costo");
-      txtCosto.setPrefWidth(280);
-      
-      TextField txtTransbordos = new TextField();
-      txtTransbordos.setPromptText("Cantidad de transbordos");
-      txtTransbordos.setPrefWidth(280);
-      
-      Button btnGuardar = new Button("Guardar");
-      btnGuardar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnGuardar.setOnAction(e -> {
-         Paradas origen = comboOrigenVentana.getValue();
-         Paradas destino = comboDestinoVentana.getValue();
-         
-         if (origen == null || destino == null) {
-            mostrarAlerta("Error", "Debes seleccionar origen y destino.");
-            return;
-         }
-         
-         if (origen.equals(destino)) {
-            mostrarAlerta("Error", "El origen y el destino no pueden ser la misma parada.");
-            return;
-         }
-         
-         try {
-            double tiempo = Double.parseDouble(txtTiempo.getText().trim());
-            double distancia = Double.parseDouble(txtDistancia.getText().trim());
-            double costo = Double.parseDouble(txtCosto.getText().trim());
-            int transbordos = Integer.parseInt(txtTransbordos.getText().trim());
-            
-            if (tiempo < 0 || distancia < 0 || costo < 0) {
-               mostrarAlerta("Error", "Tiempo, distancia y costo no pueden ser negativos.");
-               return;
-            }
-            
-            if (transbordos < 0) {
-               mostrarAlerta("Error", "Los transbordos no pueden ser negativos.");
-               return;
-            }
-            
-            sistema.agregarRuta(origen, destino, tiempo, distancia, costo, transbordos);
-            refrescarDesdeDB();
-            
-            mostrarAlerta("Éxito", "Ruta agregada correctamente.");
-            ventana.close();
-            
-         } catch (NumberFormatException ex) {
-            mostrarAlerta("Error", "Tiempo, distancia, costo y transbordos deben ser números válidos.");
-         }
-      });
-      
-      Button btnCancelar = new Button("Cancelar");
-      btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
-      
-      HBox botones = new HBox(15, btnGuardar, btnCancelar);
-      botones.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(
-              lblTitulo,
-              comboOrigenVentana,
-              comboDestinoVentana,
-              txtTiempo,
-              txtDistancia,
-              txtCosto,
-              txtTransbordos,
-              botones
-      );
-      
-      Scene scene = new Scene(root, 450, 500);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaVerGrafo() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Ver Grafo");
-      
-      VBox root = new VBox(20);
-      root.setPadding(new Insets(20));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label titulo = new Label("VISUALIZACIÓN DEL GRAFO");
-      titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      Label lblParadas = new Label("Paradas");
-      lblParadas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      TableView<Paradas> tablaParadas = new TableView<>();
-      tablaParadas.setItems(listaParadas);
-      tablaParadas.setPrefHeight(200);
-      
-      TableColumn<Paradas, Integer> colIdParada = new TableColumn<>("ID");
-      colIdParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-      colIdParada.setPrefWidth(80);
-      
-      TableColumn<Paradas, String> colNombreParada = new TableColumn<>("Nombre");
-      colNombreParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("nombre"));
-      colNombreParada.setPrefWidth(180);
-      
-      TableColumn<Paradas, String> colLocalizacionParada = new TableColumn<>("Localización");
-      colLocalizacionParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("localizacion"));
-      colLocalizacionParada.setPrefWidth(220);
-      
-      tablaParadas.getColumns().addAll(colIdParada, colNombreParada, colLocalizacionParada);
-      
-      Label lblRutas = new Label("Rutas");
-      lblRutas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      TableView<Rutas> tablaRutas = new TableView<>();
-      tablaRutas.setItems(listaRutas);
-      tablaRutas.setPrefHeight(250);
-      
-      TableColumn<Rutas, String> colOrigen = new TableColumn<>("Origen");
-      colOrigen.setCellValueFactory(cellData ->
-              new javafx.beans.property.SimpleStringProperty(
-                      cellData.getValue().getOrigen().getNombre()
-              ));
-      colOrigen.setPrefWidth(150);
-      
-      TableColumn<Rutas, String> colDestino = new TableColumn<>("Destino");
-      colDestino.setCellValueFactory(cellData ->
-              new javafx.beans.property.SimpleStringProperty(
-                      cellData.getValue().getDestino().getNombre()
-              ));
-      colDestino.setPrefWidth(150);
-      
-      TableColumn<Rutas, Double> colTiempo = new TableColumn<>("Tiempo");
-      colTiempo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("tiempo"));
-      colTiempo.setPrefWidth(100);
-      
-      TableColumn<Rutas, Double> colDistancia = new TableColumn<>("Distancia");
-      colDistancia.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("distancia"));
-      colDistancia.setPrefWidth(100);
-      
-      TableColumn<Rutas, Double> colCosto = new TableColumn<>("Costo");
-      colCosto.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("costo"));
-      colCosto.setPrefWidth(100);
-      
-      TableColumn<Rutas, Integer> colTransbordos = new TableColumn<>("Transbordos");
-      colTransbordos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordo"));
-      colTransbordos.setPrefWidth(120);
-      
-      tablaRutas.getColumns().addAll(
-              colOrigen, colDestino, colTiempo, colDistancia, colCosto, colTransbordos
-      );
-      
-      Button btnCerrar = new Button("Cerrar");
-      btnCerrar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCerrar.setOnAction(e -> ventana.close());
-      
-      HBox cajaBoton = new HBox(btnCerrar);
-      cajaBoton.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(
-              titulo,
-              lblParadas,
-              tablaParadas,
-              lblRutas,
-              tablaRutas,
-              cajaBoton
-      );
-      
-      Scene scene = new Scene(root, 820, 650);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaEliminarParada() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Eliminar Parada");
-      
-      VBox root = new VBox(20);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label lblTitulo = new Label("ELIMINAR PARADA");
-      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      ComboBox<Paradas> comboParadas = new ComboBox<>(listaParadas);
-      comboParadas.setPromptText("Selecciona la parada a eliminar");
-      comboParadas.setPrefWidth(300);
-      
-      Button btnEliminar = new Button("Eliminar");
-      btnEliminar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnEliminar.setOnAction(e -> {
-         Paradas paradaSeleccionada = comboParadas.getValue();
-         
-         if (paradaSeleccionada == null) {
-            mostrarAlerta("Error", "Debes seleccionar una parada.");
-            return;
-         }
-         
-         sistema.eliminarParada(paradaSeleccionada);
-         
-         if (comboOrigen.getValue() != null && comboOrigen.getValue().equals(paradaSeleccionada)) {
-            comboOrigen.setValue(null);
-         }
-         
-         if (comboDestino.getValue() != null && comboDestino.getValue().equals(paradaSeleccionada)) {
-            comboDestino.setValue(null);
-         }
-         
-         refrescarDesdeDB();
-         
-         areaResultado.setText("Parada eliminada correctamente: " + paradaSeleccionada.getNombre());
-         mostrarAlerta("Éxito", "Parada eliminada correctamente.");
-         ventana.close();
-      });
-      
-      Button btnCancelar = new Button("Cancelar");
-      btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
-      
-      HBox botones = new HBox(15, btnEliminar, btnCancelar);
-      botones.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(lblTitulo, comboParadas, botones);
-      
-      Scene scene = new Scene(root, 450, 250);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaEliminarRuta() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Eliminar Ruta");
-      
-      VBox root = new VBox(20);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label lblTitulo = new Label("ELIMINAR RUTA");
-      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      ComboBox<Paradas> comboOrigenVentana = new ComboBox<>(listaParadas);
-      comboOrigenVentana.setPromptText("Selecciona origen");
-      comboOrigenVentana.setPrefWidth(300);
-      
-      ComboBox<Paradas> comboDestinoVentana = new ComboBox<>(listaParadas);
-      comboDestinoVentana.setPromptText("Selecciona destino");
-      comboDestinoVentana.setPrefWidth(300);
-      
-      Button btnEliminar = new Button("Eliminar");
-      btnEliminar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnEliminar.setOnAction(e -> {
-         Paradas origen = comboOrigenVentana.getValue();
-         Paradas destino = comboDestinoVentana.getValue();
-         
-         if (origen == null || destino == null) {
-            mostrarAlerta("Error", "Debes seleccionar origen y destino.");
-            return;
-         }
-         
-         if (origen.equals(destino)) {
-            mostrarAlerta("Error", "Origen y destino no pueden ser la misma parada.");
-            return;
-         }
-         
-         sistema.eliminarRuta(origen, destino);
-         refrescarDesdeDB();
-         
-         areaResultado.setText("Ruta eliminada correctamente:\n" +
-                 origen.getNombre() + " -> " + destino.getNombre());
-         
-         mostrarAlerta("Éxito", "Ruta eliminada correctamente.");
-         ventana.close();
-      });
-      
-      Button btnCancelar = new Button("Cancelar");
-      btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
-      
-      HBox botones = new HBox(15, btnEliminar, btnCancelar);
-      botones.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(
-              lblTitulo,
-              comboOrigenVentana,
-              comboDestinoVentana,
-              botones
-      );
-      
-      Scene scene = new Scene(root, 450, 300);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaModificarParada() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Modificar Parada");
-      
-      VBox root = new VBox(20);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label lblTitulo = new Label("MODIFICAR PARADA");
-      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      ComboBox<Paradas> comboParadas = new ComboBox<>(listaParadas);
-      comboParadas.setPromptText("Selecciona la parada");
-      comboParadas.setPrefWidth(300);
-      
-      TextField txtNuevoNombre = new TextField();
-      txtNuevoNombre.setPromptText("Nuevo nombre de la parada");
-      txtNuevoNombre.setPrefWidth(300);
-      
-      TextField txtNuevaLocalizacion = new TextField();
-      txtNuevaLocalizacion.setPromptText("Nueva localización de la parada");
-      txtNuevaLocalizacion.setPrefWidth(300);
-      
-      Button btnModificar = new Button("Modificar");
-      btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnModificar.setOnAction(e -> {
-         Paradas paradaSeleccionada = comboParadas.getValue();
-         String nuevoNombre = txtNuevoNombre.getText().trim();
-         String nuevaLocalizacion = txtNuevaLocalizacion.getText().trim();
-         
-         if (paradaSeleccionada == null) {
-            mostrarAlerta("Error", "Debes seleccionar una parada.");
-            return;
-         }
-         
-         if (nuevoNombre.isEmpty() || nuevaLocalizacion.isEmpty()) {
-            mostrarAlerta("Error", "El nuevo nombre y la nueva localización no pueden estar vacíos.");
-            return;
-         }
-         
-         sistema.modificarParada(paradaSeleccionada, nuevoNombre, nuevaLocalizacion);
-         refrescarSinReiniciarGrafo();
-         
-         areaResultado.setText("Parada modificada correctamente:\nNuevo nombre: " + nuevoNombre +
-                 "\nNueva localización: " + nuevaLocalizacion);
-         mostrarAlerta("Éxito", "Parada modificada correctamente.");
-         ventana.close();
-      });
-      
-      Button btnCancelar = new Button("Cancelar");
-      btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
-      
-      HBox botones = new HBox(15, btnModificar, btnCancelar);
-      botones.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(lblTitulo, comboParadas, txtNuevoNombre, txtNuevaLocalizacion, botones);
-      
-      Scene scene = new Scene(root, 450, 380);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   private void mostrarVentanaModificarRuta() {
-      Stage ventana = new Stage();
-      ventana.setTitle("Modificar Ruta");
-      
-      VBox root = new VBox(15);
-      root.setAlignment(Pos.CENTER);
-      root.setPadding(new Insets(25));
-      root.setStyle("-fx-background-color: #A7B3BF;");
-      
-      Label lblTitulo = new Label("MODIFICAR RUTA");
-      lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
-      
-      ComboBox<Paradas> comboOrigenVentana = new ComboBox<>(listaParadas);
-      comboOrigenVentana.setPromptText("Selecciona origen");
-      comboOrigenVentana.setPrefWidth(280);
-      
-      ComboBox<Paradas> comboDestinoVentana = new ComboBox<>(listaParadas);
-      comboDestinoVentana.setPromptText("Selecciona destino");
-      comboDestinoVentana.setPrefWidth(280);
-      
-      TextField txtTiempo = new TextField();
-      txtTiempo.setPromptText("Nuevo tiempo");
-      txtTiempo.setPrefWidth(280);
-      
-      TextField txtDistancia = new TextField();
-      txtDistancia.setPromptText("Nueva distancia");
-      txtDistancia.setPrefWidth(280);
-      
-      TextField txtCosto = new TextField();
-      txtCosto.setPromptText("Nuevo costo");
-      txtCosto.setPrefWidth(280);
-      
-      TextField txtTransbordos = new TextField();
-      txtTransbordos.setPromptText("Nueva cantidad de transbordos");
-      txtTransbordos.setPrefWidth(280);
-      
-      Button btnModificar = new Button("Modificar");
-      btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnModificar.setOnAction(e -> {
-         Paradas origen = comboOrigenVentana.getValue();
-         Paradas destino = comboDestinoVentana.getValue();
-         
-         if (origen == null || destino == null) {
-            mostrarAlerta("Error", "Debes seleccionar origen y destino.");
-            return;
-         }
-         
-         if (origen.equals(destino)) {
-            mostrarAlerta("Error", "Origen y destino no pueden ser la misma parada.");
-            return;
-         }
-         
-         try {
-            double nuevoTiempo = Double.parseDouble(txtTiempo.getText().trim());
-            double nuevaDistancia = Double.parseDouble(txtDistancia.getText().trim());
-            double nuevoCosto = Double.parseDouble(txtCosto.getText().trim());
-            int nuevosTransbordos = Integer.parseInt(txtTransbordos.getText().trim());
-            
-            if (nuevoTiempo < 0 || nuevaDistancia < 0 || nuevoCosto < 0) {
-               mostrarAlerta("Error", "Tiempo, distancia y costo no pueden ser negativos.");
-               return;
-            }
-            
-            if (nuevosTransbordos < 0) {
-               mostrarAlerta("Error", "Los transbordos no pueden ser negativos.");
-               return;
-            }
-            
-            sistema.modificarRuta(origen, destino, nuevoTiempo, nuevaDistancia, nuevoCosto, nuevosTransbordos);
-            refrescarDesdeDB();
-            
-            areaResultado.setText("Ruta modificada correctamente:\n" +
-                    origen.getNombre() + " -> " + destino.getNombre());
-            
-            mostrarAlerta("Éxito", "Ruta modificada correctamente.");
-            ventana.close();
-            
-         } catch (NumberFormatException ex) {
-            mostrarAlerta("Error", "Tiempo, distancia, costo y transbordos deben ser números válidos.");
-         }
-      });
-      
-      Button btnCancelar = new Button("Cancelar");
-      btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
-      
-      HBox botones = new HBox(15, btnModificar, btnCancelar);
-      botones.setAlignment(Pos.CENTER);
-      
-      root.getChildren().addAll(
-              lblTitulo,
-              comboOrigenVentana,
-              comboDestinoVentana,
-              txtTiempo,
-              txtDistancia,
-              txtCosto,
-              txtTransbordos,
-              botones
-      );
-      
-      Scene scene = new Scene(root, 450, 500);
-      ventana.setScene(scene);
-      ventana.show();
-   }
-   
-   @FXML
-   private void agregarParada() {
-      mostrarVentanaAgregarParada();
-   }
-   
-   @FXML
-   private void agregarRuta() {
-      mostrarVentanaAgregarRuta();
-   }
-   
-   @FXML
-   private void modificarParada() {
-      mostrarVentanaModificarParada();
-   }
-   
-   @FXML
-   private void modificarRuta() {
-      mostrarVentanaModificarRuta();
-   }
-   
-   @FXML
-   private void eliminarParada() {
-      mostrarVentanaEliminarParada();
-   }
-   
-   @FXML
-   private void eliminarRuta() {
-      mostrarVentanaEliminarRuta();
-   }
-   
-   @FXML
-   private void verGrafo() {
-      mostrarVentanaVerGrafo();
    }
 }
