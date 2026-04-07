@@ -42,6 +42,9 @@ public class MainController {
    @FXML
    private StackPane contenedorMapa;
    
+   @FXML
+   private HBox leyendaRutas;
+   
    private final SistemaGrafos sistema = new SistemaGrafos();
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
    private AlgoritmosGrafos.RutaResultado ultimaRutaResultado;
@@ -51,21 +54,26 @@ public class MainController {
    
    private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
-
+   
    @FXML
    public void initialize() {
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
       actualizarCombos();
-
+      
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
-
+      
       comboAlgoritmo.setItems(FXCollections.observableArrayList(AlgoritmoRuta.values()));
       comboAlgoritmo.setValue(AlgoritmoRuta.DIJKSTRA);
-
+      
+      if (leyendaRutas != null) {
+         leyendaRutas.setVisible(false);
+         leyendaRutas.setManaged(false);
+      }
+      
       areaResultado.setText("Selecciona origen, destino, criterio y algoritmo para buscar la mejor ruta.");
-
+      
       inicializarSmartGraph();
    }
    
@@ -139,26 +147,26 @@ public class MainController {
    private void paradas() {
       mostrarVentanaParadas();
    }
-
+   
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
       Paradas destino = comboDestino.getValue();
       CriterioRuta criterio = comboCriterio.getValue();
       AlgoritmoRuta algoritmo = comboAlgoritmo.getValue();
-
+      
       if (origen == null || destino == null || criterio == null || algoritmo == null) {
          areaResultado.setText("Debes seleccionar origen, destino, criterio y algoritmo.");
          return;
       }
-
+      
       if (origen.equals(destino)) {
          areaResultado.setText("El origen y el destino no pueden ser la misma parada.");
          return;
       }
-
+      
       AlgoritmosGrafos.RutaResultado resultado;
-
+      
       switch (algoritmo) {
          case BELLMAN_FORD:
             resultado = algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
@@ -171,17 +179,109 @@ public class MainController {
             resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
             break;
       }
-
+      
       if (!resultado.isExitoso()) {
          ultimaRutaResultado = null;
          areaResultado.setText(resultado.getMensaje());
+         
+         if (leyendaRutas != null) {
+            leyendaRutas.setVisible(false);
+            leyendaRutas.setManaged(false);
+         }
          return;
       }
-
+      
       ultimaRutaResultado = resultado;
-      areaResultado.setText("Algoritmo usado: " + algoritmo + "\n\n" + resultado.obtenerResumen());
-
-      resaltarRuta(resultado.getRutaParadas());
+      
+      areaResultado.setText(
+              "Algoritmo usado: " + algoritmo + "\n\n" +
+                      resultado.obtenerResumen()
+      );
+      
+      mostrarRutasAlternativasEnMapa(origen, destino, criterio, algoritmo);
+      
+      if (leyendaRutas != null) {
+         leyendaRutas.setVisible(true);
+         leyendaRutas.setManaged(true);
+      }
+   }
+   
+   private void limpiarEstilosGrafo() {
+      if (graphView == null) return;
+      
+      for (Paradas p : sistema.getGrafo().keySet()) {
+         graphView.getStylableVertex(p).setStyleClass("vertex");
+      }
+      
+      for (Paradas origen : sistema.getGrafo().keySet()) {
+         for (Rutas r : sistema.getGrafo().get(origen)) {
+            graphView.getStylableEdge(r).setStyleClass("edge");
+         }
+      }
+   }
+   
+   private void pintarRuta(List<Paradas> camino, String claseVertex, String claseEdge) {
+      if (camino == null || camino.isEmpty() || graphView == null) {
+         return;
+      }
+      
+      for (Paradas p : camino) {
+         graphView.getStylableVertex(p).setStyleClass(claseVertex);
+      }
+      
+      for (int i = 0; i < camino.size() - 1; i++) {
+         Paradas a = camino.get(i);
+         Paradas b = camino.get(i + 1);
+         
+         for (Rutas r : sistema.getGrafo().get(a)) {
+            if (r.getDestino().equals(b)) {
+               graphView.getStylableEdge(r).setStyleClass(claseEdge);
+               break;
+            }
+         }
+      }
+   }
+   
+   private AlgoritmosGrafos.RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
+      switch (algoritmo) {
+         case BELLMAN_FORD:
+            return algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
+         case FLOYD_WARSHALL:
+            return algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
+         case DIJKSTRA:
+         default:
+            return algoritmos.calcularMejorRuta(origen, destino, criterio);
+      }
+   }
+   
+   private void mostrarRutasAlternativasEnMapa(Paradas origen, Paradas destino, CriterioRuta criterioPrincipal, AlgoritmoRuta algoritmo) {
+      limpiarEstilosGrafo();
+      
+      AlgoritmosGrafos.RutaResultado principal = calcularSegunAlgoritmo(origen, destino, criterioPrincipal, algoritmo);
+      if (principal.isExitoso()) {
+         pintarRuta(principal.getRutaParadas(), "myVertex", "myEdge");
+      }
+      
+      if (criterioPrincipal != CriterioRuta.TIEMPO) {
+         AlgoritmosGrafos.RutaResultado alt1 = calcularSegunAlgoritmo(origen, destino, CriterioRuta.TIEMPO, algoritmo);
+         if (alt1.isExitoso()) {
+            pintarRuta(alt1.getRutaParadas(), "altVertex1", "altEdge1");
+         }
+      }
+      
+      if (criterioPrincipal != CriterioRuta.COSTO) {
+         AlgoritmosGrafos.RutaResultado alt2 = calcularSegunAlgoritmo(origen, destino, CriterioRuta.COSTO, algoritmo);
+         if (alt2.isExitoso()) {
+            pintarRuta(alt2.getRutaParadas(), "altVertex2", "altEdge2");
+         }
+      }
+      
+      if (criterioPrincipal != CriterioRuta.TRANSBORDO) {
+         AlgoritmosGrafos.RutaResultado alt3 = calcularSegunAlgoritmo(origen, destino, CriterioRuta.TRANSBORDO, algoritmo);
+         if (alt3.isExitoso()) {
+            pintarRuta(alt3.getRutaParadas(), "altVertex3", "altEdge3");
+         }
+      }
    }
    
    private void resaltarRuta(List<Paradas> camino) {
@@ -214,6 +314,43 @@ public class MainController {
             }
          }
       }
+   }
+   
+   private String obtenerRutasAlternativas(Paradas origen, Paradas destino, AlgoritmoRuta algoritmo) {
+      StringBuilder sb = new StringBuilder();
+      
+      CriterioRuta[] criterios = {
+              CriterioRuta.TIEMPO,
+              CriterioRuta.COSTO,
+              CriterioRuta.TRANSBORDO
+      };
+      
+      for (CriterioRuta criterioAlt : criterios) {
+         AlgoritmosGrafos.RutaResultado resultadoAlt;
+         
+         switch (algoritmo) {
+            case BELLMAN_FORD:
+               resultadoAlt = algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterioAlt);
+               break;
+            case FLOYD_WARSHALL:
+               resultadoAlt = algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterioAlt);
+               break;
+            case DIJKSTRA:
+            default:
+               resultadoAlt = algoritmos.calcularMejorRuta(origen, destino, criterioAlt);
+               break;
+         }
+         
+         sb.append("=== Ruta por ").append(criterioAlt).append(" ===\n");
+         
+         if (resultadoAlt.isExitoso()) {
+            sb.append(resultadoAlt.obtenerResumen()).append("\n\n");
+         } else {
+            sb.append(resultadoAlt.getMensaje()).append("\n\n");
+         }
+      }
+      
+      return sb.toString();
    }
    
    private void mostrarVentanaRutas() {
