@@ -12,7 +12,8 @@ public class Database {
             "jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require";
     private static final String USER = "postgres.myvvaultusceqzpcoies";
     private static final String PASSWORD = "Ld9FnmwlYcD8njV6";
-    
+
+    //Establece y retorna una conexión a la base de datos.
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName("org.postgresql.Driver");
@@ -22,7 +23,8 @@ public class Database {
             throw new SQLException("Driver de PostgreSQL no encontrado", e);
         }
     }
-    
+
+    //Retorna una lista de todas las paradas desde la tabla paradas.
     public static List<Paradas> obtenerTodasParadas() {
         List<Paradas> paradas = new ArrayList<>();
         String sql = "SELECT id, nombre, localizacion FROM paradas ORDER BY id";
@@ -43,7 +45,8 @@ public class Database {
         }
         return paradas;
     }
-    
+
+    //Inserta una nueva parada en la base de datos.
     public static void guardarParada(Paradas parada) {
         String sql = "INSERT INTO paradas (id, nombre, localizacion) VALUES (?, ?, ?)";
         try (Connection conn = getConnection();
@@ -57,7 +60,8 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-    
+
+    //Elimina una parada por su ID.
     public static void eliminarParada(Paradas parada) {
         String sql = "DELETE FROM paradas WHERE id = ?";
         try (Connection conn = getConnection();
@@ -69,7 +73,8 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-    
+
+    //Actualiza nombre y localización de una parada.
     public static void modificarParada(Paradas parada, String nuevoNombre, String nuevaLocalizacion) {
         String sql = "UPDATE paradas SET nombre = ?, localizacion = ? WHERE id = ?";
         try (Connection conn = getConnection();
@@ -83,7 +88,8 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-    
+
+    //Retorna el siguiente ID disponible para una nueva parada.
     public static int obtenerSiguienteIdParada() {
         String sql = "SELECT COALESCE(MAX(id), 0) + 1 FROM paradas";
         try (Connection conn = getConnection();
@@ -98,7 +104,8 @@ public class Database {
         }
         return 1;
     }
-    
+
+    //Retorna una lista de todas las rutas desde la tabla rutas.
     public static List<Rutas> obtenerTodasRutas(Map<Paradas, List<Rutas>> grafo) {
         List<Rutas> rutas = new ArrayList<>();
         String sql = "SELECT origen_id, destino_id, tiempo, distancia, costo, transbordo FROM rutas";
@@ -135,7 +142,8 @@ public class Database {
         }
         return rutas;
     }
-    
+
+    //Inserta una nueva ruta en la base de datos.
     public static void guardarRuta(Rutas ruta) {
         String sql = "INSERT INTO rutas (origen_id, destino_id, tiempo, distancia, costo, transbordo) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
@@ -152,7 +160,8 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-    
+
+    //Elimina una ruta por origen y destino.
     public static void eliminarRuta(Paradas origen, Paradas destino) {
         String sql = "DELETE FROM rutas WHERE origen_id = ? AND destino_id = ?";
         try (Connection conn = getConnection();
@@ -165,7 +174,8 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-    
+
+    //Actualiza los atributos de una ruta existente.
     public static void modificarRuta(Rutas ruta) {
         String sql = "UPDATE rutas SET tiempo = ?, distancia = ?, costo = ?, transbordo = ? WHERE origen_id = ? AND destino_id = ?";
         try (Connection conn = getConnection();
