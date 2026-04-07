@@ -6,7 +6,7 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="Visual.MainController">
 
-    <!-- 🔝 PARTE SUPERIOR -->
+    <!-- PARTE SUPERIOR -->
     <top>
         <VBox spacing="10" alignment="CENTER" style="-fx-padding: 15; -fx-background-color: #0F1C3F;">
 
@@ -27,7 +27,7 @@
         </VBox>
     </top>
 
-    <!-- 🗺️ CENTRO (MAPA) -->
+    <!-- CENTRO (MAPA) -->
     <center>
         <StackPane fx:id="contenedorMapa"
                    style="
@@ -41,7 +41,7 @@
            "/>
     </center>
 
-    <!-- 📊 PARTE DERECHA (RESULTADOS) -->
+    <!-- PARTE DERECHA (RESULTADOS) -->
     <right>
         <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: #CFD8DC;">
 
@@ -55,7 +55,7 @@
         </VBox>
     </right>
 
-    <!-- 🔻 PARTE INFERIOR (LEYENDA) -->
+    <!-- PARTE INFERIOR (LEYENDA) -->
     <bottom>
         <HBox fx:id="leyendaRutas"
               spacing="20"
