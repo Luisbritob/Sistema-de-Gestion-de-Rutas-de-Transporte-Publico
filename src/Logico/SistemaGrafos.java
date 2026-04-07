@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class SistemaGrafos {
    
-   private Map<Paradas, List<Rutas>> grafo;
+   private final Map<Paradas, List<Rutas>> grafo;
 
    //Inicializa el grafo y carga datos desde la base de datos.
    public SistemaGrafos() {

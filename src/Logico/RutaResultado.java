@@ -48,15 +48,6 @@ public class RutaResultado {
     public List<Paradas> getRutaParadas() {
         return new ArrayList<>(rutaParadas); // Copia defensiva
     }
-    public List<Rutas> getRutaRutas() {
-        return new ArrayList<>(rutaRutas); // Copia defensiva
-    }
-    public double getTotal() {
-        return total;
-    }
-    public CriterioRuta getCriterio() {
-        return criterio;
-    }
 
     //Genera un resumen detallado de la ruta encontrada
     public String obtenerResumen() {

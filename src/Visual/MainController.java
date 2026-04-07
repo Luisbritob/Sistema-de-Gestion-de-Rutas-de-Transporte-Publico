@@ -48,12 +48,10 @@ public class MainController {
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
    
-   private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
    
    /**
     * Inicializa la interfaz principal al cargar el controlador.
-    *
     * Aquí se cargan las paradas disponibles, se llenan los ComboBox,
     * se establecen valores por defecto para criterio y algoritmo,
     * se oculta la leyenda de rutas alternativas y se construye el grafo visual.
@@ -81,14 +79,13 @@ public class MainController {
    
    /**
     * Construye el grafo visual a partir de la información almacenada en el sistema.
-    *
     * Inserta todas las paradas como vértices y todas las rutas como aristas.
     * Luego crea el panel visual del grafo, aplica el archivo CSS si existe,
     * lo coloca dentro del contenedor del mapa y finalmente inicializa la interacción
     * gráfica con JavaFX.
     */
    private void inicializarSmartGraph() {
-      digraph = new DigraphEdgeList<>();
+      Digraph<Paradas, Rutas> digraph = new DigraphEdgeList<>();
       
       for (Paradas parada : sistema.getGrafo().keySet()) {
          digraph.insertVertex(parada);
@@ -123,7 +120,6 @@ public class MainController {
    
    /**
     * Configura la interacción del usuario con las paradas del grafo.
-    *
     * Cuando el usuario hace doble clic sobre una parada,
     * se abre una ventana con opciones para modificar la parada,
     * eliminarla, agregar una ruta desde ella o eliminar una ruta existente.
@@ -171,7 +167,6 @@ public class MainController {
    
    /**
     * Muestra una ventana para editar los datos de una parada existente.
-    *
     * Permite cambiar el nombre y la localización de la parada seleccionada.
     * Antes de guardar, valida que ambos campos no estén vacíos.
     * Si la modificación es correcta, actualiza el sistema y refresca el grafo
@@ -204,7 +199,7 @@ public class MainController {
       
       Button btnModificar = new Button("Modificar");
       btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnModificar.setOnAction(e -> {
+      btnModificar.setOnAction(_ -> {
          String nuevoNombre = txtNuevoNombre.getText().trim();
          String nuevaLocalizacion = txtNuevaLocalizacion.getText().trim();
          
@@ -224,7 +219,7 @@ public class MainController {
       
       Button btnCancelar = new Button("Cancelar");
       btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
+      btnCancelar.setOnAction(_ -> ventana.close());
       
       HBox botones = new HBox(15, btnModificar, btnCancelar);
       botones.setAlignment(Pos.CENTER);
@@ -270,7 +265,7 @@ public class MainController {
       Button btnModificar = new Button("Modificar");
       btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
       
-      btnModificar.setOnAction(e -> {
+      btnModificar.setOnAction(_ -> {
          Paradas destino = comboDestinoVentana.getValue();
          
          if (destino == null) {
@@ -294,7 +289,6 @@ public class MainController {
                return;
             }
             
-            // 🔥 AQUÍ USAS TU MÉTODO
             sistema.modificarRuta(origenFijo, destino, tiempo, distancia, costo, transbordos);
             
             refrescarSinReiniciarGrafo();
@@ -334,12 +328,9 @@ public class MainController {
    
    /**
     * Muestra una confirmación para eliminar una parada del sistema.
-    *
     * Si el usuario confirma, la parada se elimina tanto del sistema lógico
     * como de la interfaz. Además, limpia la selección si la parada eliminada
     * estaba escogida como origen o destino.
-    *
-    * @param paradaSeleccionada parada que se desea eliminar.
     */
    private void mostrarVentanaEliminarParada(Paradas paradaSeleccionada) {
       Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
@@ -368,12 +359,9 @@ public class MainController {
    
    /**
     * Muestra una ventana para agregar una nueva ruta saliendo desde una parada fija.
-    *
     * El usuario selecciona el destino e introduce tiempo, distancia, costo y cantidad
     * de transbordos. Se valida que el destino exista, que no sea el mismo origen,
     * que los valores sean numéricos y que no sean negativos.
-    *
-    * @param origenFijo parada desde la cual saldrá la nueva ruta.
     */
    private void mostrarVentanaAgregarRutaDesde(Paradas origenFijo) {
       Stage ventana = new Stage();
@@ -449,7 +437,7 @@ public class MainController {
       
       Button btnCancelar = new Button("Cancelar");
       btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
-      btnCancelar.setOnAction(e -> ventana.close());
+      btnCancelar.setOnAction(_ -> ventana.close());
       
       HBox botones = new HBox(15, btnGuardar, btnCancelar);
       botones.setAlignment(Pos.CENTER);
@@ -472,11 +460,9 @@ public class MainController {
    
    /**
     * Muestra una ventana para eliminar una ruta que sale desde una parada fija.
-    *
     * El usuario elige la parada destino de la ruta que desea borrar.
     * Se valida que se haya escogido un destino válido y diferente del origen.
     * Luego se elimina la ruta y se actualiza el grafo visual.
-    *
     * @param origenFijo parada origen desde la cual se desea eliminar una ruta.
     */
    private void mostrarVentanaEliminarRutaDesde(Paradas origenFijo) {
@@ -539,7 +525,6 @@ public class MainController {
    
    /**
     * Refresca los datos mostrados en pantalla sin reconstruir completamente el grafo.
-    *
     * Esta opción es útil cuando la estructura general del grafo sigue siendo válida,
     * pero se necesita actualizar la lista de paradas y redibujar la visualización.
     */
@@ -554,7 +539,6 @@ public class MainController {
    
    /**
     * Recarga los datos desde la base de datos y reconstruye por completo el grafo visual.
-    *
     * Se usa cuando la estructura del sistema cambia de manera importante,
     * por ejemplo al eliminar o agregar una parada, y se necesita reconstruir
     * la visualización desde cero.
@@ -568,7 +552,6 @@ public class MainController {
    
    /**
     * Actualiza los ComboBox de origen y destino con la lista actual de paradas.
-    *
     * Esto mantiene sincronizada la interfaz con el estado real del sistema.
     */
    private void actualizarCombos() {
@@ -578,9 +561,6 @@ public class MainController {
    
    /**
     * Muestra una alerta informativa reutilizable.
-    *
-    * @param titulo título de la ventana de alerta.
-    * @param mensaje contenido principal que verá el usuario.
     */
    private void mostrarAlerta(String titulo, String mensaje) {
       Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -592,15 +572,8 @@ public class MainController {
    
    /**
     * Calcula una ruta según el algoritmo seleccionado por el usuario.
-    *
     * Encapsula la lógica de selección del algoritmo para evitar repetir
     * condicionales en otros métodos del controlador.
-    *
-    * @param origen parada de inicio.
-    * @param destino parada final.
-    * @param criterio criterio de optimización de la ruta.
-    * @param algoritmo algoritmo escogido para el cálculo.
-    * @return el resultado de la ruta calculada, exitoso o no.
     */
    private RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
       switch (algoritmo) {
@@ -616,7 +589,6 @@ public class MainController {
    
    /**
     * Busca la mejor ruta entre dos paradas según el criterio y el algoritmo escogidos.
-    *
     * Primero valida que todos los datos requeridos estén seleccionados y que
     * origen y destino sean distintos. Luego calcula la ruta, muestra el resumen
     * en el área de resultados y resalta visualmente el camino encontrado en el mapa.
@@ -668,7 +640,6 @@ public class MainController {
    
    /**
     * Calcula y muestra la ruta principal junto con rutas alternativas.
-    *
     * La ruta principal se calcula usando el criterio seleccionado por el usuario,
     * mientras que las alternativas se calculan usando los demás criterios disponibles.
     * Además de mostrar la información textual, pinta cada ruta en el mapa con estilos
@@ -721,7 +692,6 @@ public class MainController {
    
    /**
     * Restablece el estilo visual por defecto de todos los vértices y aristas del grafo.
-    *
     * Se usa antes de volver a pintar rutas nuevas para evitar que queden resaltados
     * de búsquedas anteriores.
     */
@@ -741,13 +711,8 @@ public class MainController {
    
    /**
     * Pinta una ruta cualquiera en el grafo con las clases CSS indicadas.
-    *
     * Este método es reutilizable para la ruta principal y para las rutas alternativas.
     * Aplica una clase a los vértices del camino y otra a las aristas entre paradas consecutivas.
-    *
-    * @param camino lista ordenada de paradas que forman la ruta.
-    * @param claseVertex nombre de la clase CSS para los vértices.
-    * @param claseEdge nombre de la clase CSS para las aristas.
     */
    private void pintarRuta(List<Paradas> camino, String claseVertex, String claseEdge) {
       if (camino == null || camino.isEmpty() || graphView == null) {
@@ -773,15 +738,9 @@ public class MainController {
    
    /**
     * Muestra en el mapa la ruta principal y las rutas alternativas.
-    *
     * La ruta principal se dibuja con el estilo principal y las demás rutas,
     * calculadas con criterios distintos, se dibujan con estilos alternativos.
     * Finalmente, se vuelven a destacar visualmente el origen y el destino.
-    *
-    * @param origen parada de inicio.
-    * @param destino parada de llegada.
-    * @param criterioPrincipal criterio seleccionado como principal.
-    * @param algoritmo algoritmo usado para todos los cálculos.
     */
    private void mostrarRutasAlternativasEnMapa(Paradas origen, Paradas destino, CriterioRuta criterioPrincipal, AlgoritmoRuta algoritmo) {
       limpiarEstilosGrafo();
@@ -817,12 +776,9 @@ public class MainController {
    
    /**
     * Resalta una ruta específica como la ruta principal.
-    *
     * Primero limpia los estilos existentes para evitar superposición visual.
     * Luego pinta las paradas del camino y las aristas entre ellas con las clases
     * principales definidas en el CSS.
-    *
-    * @param camino lista ordenada de paradas que forman la ruta a resaltar.
     */
    private void resaltarRuta(List<Paradas> camino) {
       if (camino == null || camino.isEmpty() || graphView == null) {
@@ -850,12 +806,8 @@ public class MainController {
    
    /**
     * Destaca visualmente la parada de origen y la de destino.
-    *
     * Esto ayuda al usuario a identificar rápidamente desde dónde inicia
     * y dónde termina la búsqueda realizada.
-    *
-    * @param origen parada inicial de la búsqueda.
-    * @param destino parada final de la búsqueda.
     */
    private void resaltarOrigenDestino(Paradas origen, Paradas destino) {
       if (graphView == null) return;
@@ -871,10 +823,8 @@ public class MainController {
    
    /**
     * Genera un texto con las rutas calculadas para los distintos criterios.
-    *
     * Se usa para mostrar al usuario un resumen completo de las alternativas
     * por tiempo, costo y transbordo, usando el mismo algoritmo seleccionado.
-    *
     * @param origen parada inicial.
     * @param destino parada final.
     * @param algoritmo algoritmo con el que se evaluarán los criterios.
@@ -906,7 +856,6 @@ public class MainController {
    
    /**
     * Método conectado desde la vista para abrir la ventana de agregar parada.
-    *
     * Se deja separado para que el evento del botón en FXML sea simple
     * y delegue la lógica visual al método correspondiente.
     */
@@ -917,7 +866,6 @@ public class MainController {
    
    /**
     * Muestra una ventana para registrar una nueva parada en el sistema.
-    *
     * Solicita nombre y localización, valida que ambos campos estén completos,
     * crea la nueva instancia de Paradas con un ID generado desde la base de datos,
     * la agrega al sistema y reconstruye la interfaz para reflejar el cambio.
@@ -947,7 +895,7 @@ public class MainController {
       Button btnGuardar = new Button("Guardar");
       btnGuardar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 40;");
       
-      btnGuardar.setOnAction(e -> {
+      btnGuardar.setOnAction(_ -> {
          String nombre = txtNombre.getText().trim();
          String localizacion = txtLocalizacion.getText().trim();
          
@@ -971,7 +919,7 @@ public class MainController {
       
       Button btnCancelar = new Button("Cancelar");
       btnCancelar.setStyle("-fx-background-color: #63666A; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 40;");
-      btnCancelar.setOnAction(e -> ventana.close());
+      btnCancelar.setOnAction(_ -> ventana.close());
       
       HBox botones = new HBox(20, btnGuardar, btnCancelar);
       botones.setAlignment(Pos.CENTER);

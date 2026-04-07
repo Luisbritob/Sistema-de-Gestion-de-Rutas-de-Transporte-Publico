@@ -6,7 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Mainfx extends Application {
-
+   
    //Carga el archivo FXML MainView.fxml, y lO muestra
    @Override
    public void start(Stage stage) throws Exception {
@@ -16,9 +16,5 @@ public class Mainfx extends Application {
       stage.setScene(scene);
       stage.show();
    }
-
-   //Inicia la aplicación JavaFX
-   public static void main(String[] args) {
-      launch();
-   }
+   
 }

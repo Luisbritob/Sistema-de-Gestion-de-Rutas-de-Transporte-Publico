@@ -1,8 +1,8 @@
 package Logico;
 
 public class Rutas {
-   private Paradas origen;
-   private Paradas destino;
+   private final Paradas origen;
+   private final Paradas destino;
    private double tiempo;
    private double distancia;
    private double costo;
@@ -58,17 +58,12 @@ public class Rutas {
 
    //Retorna el peso correspondiente según el criterio
    public double getPesoSegunCriterio(CriterioRuta criterio) {
-      switch (criterio) {
-         case TIEMPO:
-            return tiempo;
-         case DISTANCIA:
-            return distancia;
-         case COSTO:
-            return costo;
-         case TRANSBORDO:
-            return transbordo;
-         default:
-            return tiempo;
-      }
+      return switch (criterio) {
+         case TIEMPO -> tiempo;
+         case DISTANCIA -> distancia;
+         case COSTO -> costo;
+         case TRANSBORDO -> transbordo;
+         default -> tiempo;
+      };
    }
 }

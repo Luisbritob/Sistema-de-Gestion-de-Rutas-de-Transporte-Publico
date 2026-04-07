@@ -17,10 +17,6 @@ public class ParadaDistancia implements Comparable<ParadaDistancia> {
         return parada;
     }
 
-    public double getDistancia() {
-        return distancia;
-    }
-
     //Se usa Comparable para ordenar por distancia
     @Override
     public int compareTo(ParadaDistancia otra) {

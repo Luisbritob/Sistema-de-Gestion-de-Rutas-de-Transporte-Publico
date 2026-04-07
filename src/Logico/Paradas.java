@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Paradas {
    
-   private int id;
+   private final int id;
    private String nombre;
    private String localizacion;
 
