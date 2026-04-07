@@ -6,52 +6,53 @@ import java.util.List;
 import java.util.Map;
 
 public class SistemaGrafos {
-
+   
    private Map<Paradas, List<Rutas>> grafo;
-
+   
    public SistemaGrafos() {
       grafo = new HashMap<>();
       cargarDatosDesdeDB();
    }
-
+   
    private void cargarDatosDesdeDB() {
       List<Paradas> paradas = Database.obtenerTodasParadas();
       for (Paradas p : paradas) {
          grafo.put(p, new ArrayList<>());
       }
-
+      
       List<Rutas> rutas = Database.obtenerTodasRutas(grafo);
       for (Rutas r : rutas) {
          grafo.get(r.getOrigen()).add(r);
       }
    }
-
+   
    public void recargarDatos() {
       grafo.clear();
       cargarDatosDesdeDB();
    }
-
+   
    public void agregarParada(Paradas parada) {
       if (parada == null) return;
       if (grafo.containsKey(parada)) return;
-
+      
       grafo.put(parada, new ArrayList<>());
       Database.guardarParada(parada);
    }
-
+   
    public void eliminarParada(Paradas parada) {
       if (!grafo.containsKey(parada)) return;
-
+      
       grafo.remove(parada);
       Database.eliminarParada(parada);
       recargarDatos();
    }
-
-   public void modificarParada(Paradas parada, String nuevoNombre) {
+   
+   public void modificarParada(Paradas parada, String nuevoNombre, String nuevaLocalizacion) {
       if (!grafo.containsKey(parada)) return;
-
+      
       parada.setNombre(nuevoNombre);
-      Database.modificarParada(parada, nuevoNombre);
+      parada.setLocalizacion(nuevaLocalizacion);
+      Database.modificarParada(parada, nuevoNombre, nuevaLocalizacion);
    }
    
    public void agregarRuta(Paradas origen, Paradas destino, double tiempo, double distancia, double costo, int transbordo) {
@@ -67,13 +68,13 @@ public class SistemaGrafos {
       grafo.get(origen).add(nuevaRuta);
       Database.guardarRuta(nuevaRuta);
    }
-
+   
    public void eliminarRuta(Paradas origen, Paradas destino) {
       List<Rutas> rutas = grafo.get(origen);
       rutas.removeIf(r -> r.getDestino().equals(destino));
       Database.eliminarRuta(origen, destino);
    }
-
+   
    public void modificarRuta(Paradas origen, Paradas destino, double nuevoTiempo, double nuevaDistancia, double nuevoCosto, int nuevoTransbordo) {
       List<Rutas> rutas = grafo.get(origen);
       for (Rutas r : rutas) {
@@ -87,7 +88,7 @@ public class SistemaGrafos {
          }
       }
    }
-
+   
    public Map<Paradas, List<Rutas>> getGrafo() {
       return grafo;
    }

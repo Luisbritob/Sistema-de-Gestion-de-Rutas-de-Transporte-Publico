@@ -25,13 +25,17 @@ public class Database {
     
     public static List<Paradas> obtenerTodasParadas() {
         List<Paradas> paradas = new ArrayList<>();
-        String sql = "SELECT id, nombre FROM paradas ORDER BY id";
-
+        String sql = "SELECT id, nombre, localizacion FROM paradas ORDER BY id";
+        
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                paradas.add(new Paradas(rs.getInt("id"), rs.getString("nombre")));
+                paradas.add(new Paradas(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("localizacion")
+                ));
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener paradas: " + e.getMessage());
@@ -39,20 +43,21 @@ public class Database {
         }
         return paradas;
     }
-
+    
     public static void guardarParada(Paradas parada) {
-        String sql = "INSERT INTO paradas (id, nombre) VALUES (?, ?)";
+        String sql = "INSERT INTO paradas (id, nombre, localizacion) VALUES (?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, parada.getId());
             pstmt.setString(2, parada.getNombre());
+            pstmt.setString(3, parada.getLocalizacion());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error al guardar parada: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
-
+    
     public static void eliminarParada(Paradas parada) {
         String sql = "DELETE FROM paradas WHERE id = ?";
         try (Connection conn = getConnection();
@@ -64,20 +69,21 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-
-    public static void modificarParada(Paradas parada, String nuevoNombre) {
-        String sql = "UPDATE paradas SET nombre = ? WHERE id = ?";
+    
+    public static void modificarParada(Paradas parada, String nuevoNombre, String nuevaLocalizacion) {
+        String sql = "UPDATE paradas SET nombre = ?, localizacion = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, nuevoNombre);
-            pstmt.setInt(2, parada.getId());
+            pstmt.setString(2, nuevaLocalizacion);
+            pstmt.setInt(3, parada.getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error al modificar parada: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
-
+    
     public static int obtenerSiguienteIdParada() {
         String sql = "SELECT COALESCE(MAX(id), 0) + 1 FROM paradas";
         try (Connection conn = getConnection();
@@ -92,16 +98,16 @@ public class Database {
         }
         return 1;
     }
-
+    
     public static List<Rutas> obtenerTodasRutas(Map<Paradas, List<Rutas>> grafo) {
         List<Rutas> rutas = new ArrayList<>();
         String sql = "SELECT origen_id, destino_id, tiempo, distancia, costo, transbordo FROM rutas";
-
+        
         Map<Integer, Paradas> mapaParadas = new HashMap<>();
         for (Paradas p : grafo.keySet()) {
             mapaParadas.put(p.getId(), p);
         }
-
+        
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -110,13 +116,16 @@ public class Database {
                 int destinoId = rs.getInt("destino_id");
                 Paradas origen = mapaParadas.get(origenId);
                 Paradas destino = mapaParadas.get(destinoId);
-
+                
                 if (origen != null && destino != null) {
-                    Rutas ruta = new Rutas(origen, destino,
+                    Rutas ruta = new Rutas(
+                            origen,
+                            destino,
                             rs.getDouble("tiempo"),
                             rs.getDouble("distancia"),
                             rs.getDouble("costo"),
-                            rs.getInt("transbordo"));
+                            rs.getInt("transbordo")
+                    );
                     rutas.add(ruta);
                 }
             }
@@ -126,7 +135,7 @@ public class Database {
         }
         return rutas;
     }
-
+    
     public static void guardarRuta(Rutas ruta) {
         String sql = "INSERT INTO rutas (origen_id, destino_id, tiempo, distancia, costo, transbordo) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
@@ -143,7 +152,7 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-
+    
     public static void eliminarRuta(Paradas origen, Paradas destino) {
         String sql = "DELETE FROM rutas WHERE origen_id = ? AND destino_id = ?";
         try (Connection conn = getConnection();
@@ -156,7 +165,7 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-
+    
     public static void modificarRuta(Rutas ruta) {
         String sql = "UPDATE rutas SET tiempo = ?, distancia = ?, costo = ?, transbordo = ? WHERE origen_id = ? AND destino_id = ?";
         try (Connection conn = getConnection();
@@ -173,6 +182,4 @@ public class Database {
             throw new RuntimeException(e);
         }
     }
-
-  
 }

@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.util.List;
 
 import com.brunomnsilva.smartgraph.graph.Digraph;
@@ -48,15 +49,11 @@ public class MainController {
    private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
    
-   private int nextIdParada = 1;
-   
    @FXML
    public void initialize() {
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
       actualizarCombos();
-      
-      nextIdParada = Database.obtenerSiguienteIdParada();
       
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
@@ -65,7 +62,6 @@ public class MainController {
       
       inicializarSmartGraph();
    }
-   
    
    private void inicializarSmartGraph() {
       digraph = new DigraphEdgeList<>();
@@ -98,36 +94,15 @@ public class MainController {
       Platform.runLater(() -> graphView.init());
    }
    
-   private void inicializarDatosEjemplo() {
-      Paradas p1 = new Paradas(nextIdParada++, "PUCMM");
-      Paradas p2 = new Paradas(nextIdParada++, "Centro Olímpico");
-      Paradas p3 = new Paradas(nextIdParada++, "UASD");
-      Paradas p4 = new Paradas(nextIdParada++, "Ágora Mall");
-      Paradas p5 = new Paradas(nextIdParada++, "BlueMall");
-      
-      sistema.agregarParada(p1);
-      sistema.agregarParada(p2);
-      sistema.agregarParada(p3);
-      sistema.agregarParada(p4);
-      sistema.agregarParada(p5);
-      
-      sistema.agregarRuta(p1, p2, 5, 9, 45, 0);
-      sistema.agregarRuta(p2, p3, 5, 9, 45, 1);
-      
-      sistema.agregarRuta(p1, p4, 10, 3, 30, 0);
-      sistema.agregarRuta(p4, p3, 10, 3, 30, 0);
-      
-      sistema.agregarRuta(p1, p5, 8, 7, 8, 0);
-      sistema.agregarRuta(p5, p3, 8, 7, 8, 1);
-      
-      sistema.agregarRuta(p2, p4, 4, 2, 12, 0);
-      sistema.agregarRuta(p4, p5, 3, 2, 6, 0);
-      sistema.agregarRuta(p5, p4, 3, 2, 6, 0);
+   private void refrescarDesdeDB() {
+      sistema.recargarDatos();
       
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
+      actualizarCombos();
+      
+      inicializarSmartGraph();
    }
-   
    
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
@@ -138,15 +113,6 @@ public class MainController {
       listaRutas.clear();
       for (Paradas parada : sistema.getGrafo().keySet()) {
          listaRutas.addAll(sistema.getGrafo().get(parada));
-      }
-   }
-   
-   private void redibujarTodo() {
-      actualizarCombos();
-      actualizarListaRutas();
-      
-      if (graphView != null) {
-         graphView.update();
       }
    }
    
@@ -351,22 +317,31 @@ public class MainController {
       txtNombre.setPrefWidth(300);
       txtNombre.setStyle("-fx-font-size: 16px; -fx-padding: 10;");
       
+      TextField txtLocalizacion = new TextField();
+      txtLocalizacion.setPromptText("Localización de la parada");
+      txtLocalizacion.setPrefWidth(300);
+      txtLocalizacion.setStyle("-fx-font-size: 16px; -fx-padding: 10;");
+      
       Button btnGuardar = new Button("Guardar");
       btnGuardar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 40;");
+      
       btnGuardar.setOnAction(e -> {
          String nombre = txtNombre.getText().trim();
+         String localizacion = txtLocalizacion.getText().trim();
          
-         if (nombre.isEmpty()) {
-            mostrarAlerta("Error", "El nombre no puede estar vacío.");
+         if (nombre.isEmpty() || localizacion.isEmpty()) {
+            mostrarAlerta("Error", "El nombre y la localización no pueden estar vacíos.");
             return;
          }
          
-         Paradas nuevaParada = new Paradas(nextIdParada++, nombre);
-         sistema.agregarParada(nuevaParada);
-         listaParadas.add(nuevaParada);
+         Paradas nuevaParada = new Paradas(
+                 Database.obtenerSiguienteIdParada(),
+                 nombre,
+                 localizacion
+         );
          
-         digraph.insertVertex(nuevaParada);
-         redibujarTodo();
+         sistema.agregarParada(nuevaParada);
+         refrescarDesdeDB();
          
          mostrarAlerta("Éxito", "Parada agregada correctamente.");
          ventana.close();
@@ -379,9 +354,9 @@ public class MainController {
       HBox botones = new HBox(20, btnGuardar, btnCancelar);
       botones.setAlignment(Pos.CENTER);
       
-      root.getChildren().addAll(lblTitulo, txtNombre, botones);
+      root.getChildren().addAll(lblTitulo, txtNombre, txtLocalizacion, botones);
       
-      Scene scene = new Scene(root, 500, 300);
+      Scene scene = new Scene(root, 500, 360);
       ventana.setScene(scene);
       ventana.show();
    }
@@ -455,24 +430,7 @@ public class MainController {
             }
             
             sistema.agregarRuta(origen, destino, tiempo, distancia, costo, transbordos);
-            
-            Rutas rutaNueva = null;
-            for (Rutas ruta : sistema.getGrafo().get(origen)) {
-               if (ruta.getDestino().equals(destino)
-                       && ruta.getTiempo() == tiempo
-                       && ruta.getDistancia() == distancia
-                       && ruta.getCosto() == costo
-                       && ruta.getTransbordo() == transbordos) {
-                  rutaNueva = ruta;
-                  break;
-               }
-            }
-            
-            if (rutaNueva != null) {
-               digraph.insertEdge(origen, destino, rutaNueva);
-            }
-            
-            redibujarTodo();
+            refrescarDesdeDB();
             
             mostrarAlerta("Éxito", "Ruta agregada correctamente.");
             ventana.close();
@@ -525,13 +483,17 @@ public class MainController {
       
       TableColumn<Paradas, Integer> colIdParada = new TableColumn<>("ID");
       colIdParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-      colIdParada.setPrefWidth(100);
+      colIdParada.setPrefWidth(80);
       
       TableColumn<Paradas, String> colNombreParada = new TableColumn<>("Nombre");
       colNombreParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("nombre"));
-      colNombreParada.setPrefWidth(250);
+      colNombreParada.setPrefWidth(180);
       
-      tablaParadas.getColumns().addAll(colIdParada, colNombreParada);
+      TableColumn<Paradas, String> colLocalizacionParada = new TableColumn<>("Localización");
+      colLocalizacionParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("localizacion"));
+      colLocalizacionParada.setPrefWidth(220);
+      
+      tablaParadas.getColumns().addAll(colIdParada, colNombreParada, colLocalizacionParada);
       
       Label lblRutas = new Label("Rutas");
       lblRutas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
@@ -567,7 +529,7 @@ public class MainController {
       colCosto.setPrefWidth(100);
       
       TableColumn<Rutas, Integer> colTransbordos = new TableColumn<>("Transbordos");
-      colTransbordos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordos"));
+      colTransbordos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordo"));
       colTransbordos.setPrefWidth(120);
       
       tablaRutas.getColumns().addAll(
@@ -590,7 +552,7 @@ public class MainController {
               cajaBoton
       );
       
-      Scene scene = new Scene(root, 750, 650);
+      Scene scene = new Scene(root, 820, 650);
       ventana.setScene(scene);
       ventana.show();
    }
@@ -622,7 +584,6 @@ public class MainController {
          }
          
          sistema.eliminarParada(paradaSeleccionada);
-         listaParadas.remove(paradaSeleccionada);
          
          if (comboOrigen.getValue() != null && comboOrigen.getValue().equals(paradaSeleccionada)) {
             comboOrigen.setValue(null);
@@ -632,9 +593,7 @@ public class MainController {
             comboDestino.setValue(null);
          }
          
-         inicializarSmartGraph();
-         actualizarCombos();
-         actualizarListaRutas();
+         refrescarDesdeDB();
          
          areaResultado.setText("Parada eliminada correctamente: " + paradaSeleccionada.getNombre());
          mostrarAlerta("Éxito", "Parada eliminada correctamente.");
@@ -692,10 +651,7 @@ public class MainController {
          }
          
          sistema.eliminarRuta(origen, destino);
-         
-         inicializarSmartGraph();
-         actualizarCombos();
-         actualizarListaRutas();
+         refrescarDesdeDB();
          
          areaResultado.setText("Ruta eliminada correctamente:\n" +
                  origen.getNombre() + " -> " + destino.getNombre());
@@ -743,26 +699,32 @@ public class MainController {
       txtNuevoNombre.setPromptText("Nuevo nombre de la parada");
       txtNuevoNombre.setPrefWidth(300);
       
+      TextField txtNuevaLocalizacion = new TextField();
+      txtNuevaLocalizacion.setPromptText("Nueva localización de la parada");
+      txtNuevaLocalizacion.setPrefWidth(300);
+      
       Button btnModificar = new Button("Modificar");
       btnModificar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
       btnModificar.setOnAction(e -> {
          Paradas paradaSeleccionada = comboParadas.getValue();
          String nuevoNombre = txtNuevoNombre.getText().trim();
+         String nuevaLocalizacion = txtNuevaLocalizacion.getText().trim();
          
          if (paradaSeleccionada == null) {
             mostrarAlerta("Error", "Debes seleccionar una parada.");
             return;
          }
          
-         if (nuevoNombre.isEmpty()) {
-            mostrarAlerta("Error", "El nuevo nombre no puede estar vacío.");
+         if (nuevoNombre.isEmpty() || nuevaLocalizacion.isEmpty()) {
+            mostrarAlerta("Error", "El nuevo nombre y la nueva localización no pueden estar vacíos.");
             return;
          }
          
-         sistema.modificarParada(paradaSeleccionada, nuevoNombre);
-         redibujarTodo();
+         sistema.modificarParada(paradaSeleccionada, nuevoNombre, nuevaLocalizacion);
+         refrescarDesdeDB();
          
-         areaResultado.setText("Parada modificada correctamente:\nNuevo nombre: " + nuevoNombre);
+         areaResultado.setText("Parada modificada correctamente:\nNuevo nombre: " + nuevoNombre +
+                 "\nNueva localización: " + nuevaLocalizacion);
          mostrarAlerta("Éxito", "Parada modificada correctamente.");
          ventana.close();
       });
@@ -774,9 +736,9 @@ public class MainController {
       HBox botones = new HBox(15, btnModificar, btnCancelar);
       botones.setAlignment(Pos.CENTER);
       
-      root.getChildren().addAll(lblTitulo, comboParadas, txtNuevoNombre, botones);
+      root.getChildren().addAll(lblTitulo, comboParadas, txtNuevoNombre, txtNuevaLocalizacion, botones);
       
-      Scene scene = new Scene(root, 450, 320);
+      Scene scene = new Scene(root, 450, 380);
       ventana.setScene(scene);
       ventana.show();
    }
@@ -850,10 +812,7 @@ public class MainController {
             }
             
             sistema.modificarRuta(origen, destino, nuevoTiempo, nuevaDistancia, nuevoCosto, nuevosTransbordos);
-            
-            inicializarSmartGraph();
-            actualizarCombos();
-            actualizarListaRutas();
+            refrescarDesdeDB();
             
             areaResultado.setText("Ruta modificada correctamente:\n" +
                     origen.getNombre() + " -> " + destino.getNombre());

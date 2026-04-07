@@ -54,7 +54,7 @@ public class Rutas {
    }
    
    public void setTransbordo(int transbordo) {
-      this.transbordo = this.transbordo;
+      this.transbordo = transbordo;
    }
    
    @Override

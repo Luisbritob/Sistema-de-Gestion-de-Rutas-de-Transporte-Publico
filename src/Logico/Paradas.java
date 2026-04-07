@@ -6,10 +6,12 @@ public class Paradas {
    
    private int id;
    private String nombre;
+   private String localizacion;
    
-   public Paradas(int id, String nombre) {
+   public Paradas(int id, String nombre, String localizacion) {
       this.id = id;
       this.nombre = nombre;
+      this.localizacion = localizacion;
    }
    
    public int getId() {
@@ -20,8 +22,16 @@ public class Paradas {
       return nombre;
    }
    
+   public String getLocalizacion() {
+      return localizacion;
+   }
+   
    public void setNombre(String nombre) {
       this.nombre = nombre;
+   }
+   
+   public void setLocalizacion(String localizacion) {
+      this.localizacion = localizacion;
    }
    
    @Override
