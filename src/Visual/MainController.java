@@ -44,6 +44,8 @@ public class MainController {
 
    private final SistemaGrafos sistema = new SistemaGrafos();
    private final AlgoritmosGrafos algoritmos = new AlgoritmosGrafos(sistema);
+
+   // CAMBIO IMPORTANTE: ya no es AlgoritmosGrafos.RutaResultado
    private RutaResultado ultimaRutaResultado;
 
    private final ObservableList<Paradas> listaParadas = FXCollections.observableArrayList();
@@ -52,7 +54,6 @@ public class MainController {
    private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
 
-   //Inicializa combos, carga datos, configura el área de resultado e inicializa SmartGraph.
    @FXML
    public void initialize() {
       listaParadas.setAll(sistema.getGrafo().keySet());
@@ -70,7 +71,6 @@ public class MainController {
       inicializarSmartGraph();
    }
 
-   //Crea un DigraphEdgeList, añade vértices y aristas, aplica CSS y lo muestra en contenedorMapa.
    private void inicializarSmartGraph() {
       digraph = new DigraphEdgeList<>();
 
@@ -102,7 +102,6 @@ public class MainController {
       Platform.runLater(() -> graphView.init());
    }
 
-   //Recarga todos los datos desde la base de dato
    private void refrescarDesdeDB() {
       sistema.recargarDatos();
 
@@ -113,13 +112,11 @@ public class MainController {
       inicializarSmartGraph();
    }
 
-   //Actualiza los ComboBox de origen y destino con la lista actual de paradas
    private void actualizarCombos() {
       comboOrigen.setItems(listaParadas);
       comboDestino.setItems(listaParadas);
    }
 
-   //Actualiza la lista observable de rutas recorriendo el grafo
    private void actualizarListaRutas() {
       listaRutas.clear();
       for (Paradas parada : sistema.getGrafo().keySet()) {
@@ -127,7 +124,6 @@ public class MainController {
       }
    }
 
-   //Muestra una ventana de alerta con título y mensaje
    private void mostrarAlerta(String titulo, String mensaje) {
       Alert alert = new Alert(Alert.AlertType.INFORMATION);
       alert.setTitle(titulo);
@@ -136,19 +132,16 @@ public class MainController {
       alert.showAndWait();
    }
 
-   //Abre el CRUD de gestión de rutas
    @FXML
    private void rutas() {
       mostrarVentanaRutas();
    }
 
-   //Abre el CRUD de gestión de paradas
    @FXML
    private void paradas() {
       mostrarVentanaParadas();
    }
 
-   //Obtiene origen, destino, criterio y algoritmo seleccionados y muestra el resultado en areaResultado
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
@@ -166,6 +159,7 @@ public class MainController {
          return;
       }
 
+      // CAMBIO: ya no necesita AlgoritmosGrafos. delante
       RutaResultado resultado;
 
       switch (algoritmo) {
@@ -193,7 +187,6 @@ public class MainController {
       resaltarRuta(resultado.getRutaParadas());
    }
 
-   //Resalta visualmente la ruta encontrada en el grafo
    private void resaltarRuta(List<Paradas> camino) {
       if (camino == null || camino.isEmpty() || graphView == null) {
          return;
@@ -226,7 +219,8 @@ public class MainController {
       }
    }
 
-   //Crea y muestra ventana modal con opciones
+   // ==================== MÉTODOS DE VENTANAS (sin cambios) ====================
+
    private void mostrarVentanaRutas() {
       Stage ventana = new Stage();
       ventana.setTitle("Opciones de Rutas");
@@ -279,7 +273,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Crea y muestra ventana modal con opciones
    private void mostrarVentanaParadas() {
       Stage ventana = new Stage();
       ventana.setTitle("Opciones de Paradas");
@@ -332,7 +325,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con formulario para agregar nueva parada
    private void mostrarVentanaAgregarParada() {
       Stage ventana = new Stage();
       ventana.setTitle("Agregar Parada");
@@ -394,7 +386,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con formulario para agregar nueva ruta
    private void mostrarVentanaAgregarRuta() {
       Stage ventana = new Stage();
       ventana.setTitle("Agregar Ruta");
@@ -497,7 +488,100 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con ComboBox para seleccionar y eliminar una parada
+   private void mostrarVentanaVerGrafo() {
+      Stage ventana = new Stage();
+      ventana.setTitle("Ver Grafo");
+
+      VBox root = new VBox(20);
+      root.setPadding(new Insets(20));
+      root.setStyle("-fx-background-color: #A7B3BF;");
+
+      Label titulo = new Label("VISUALIZACIÓN DEL GRAFO");
+      titulo.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+
+      Label lblParadas = new Label("Paradas");
+      lblParadas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+
+      TableView<Paradas> tablaParadas = new TableView<>();
+      tablaParadas.setItems(listaParadas);
+      tablaParadas.setPrefHeight(200);
+
+      TableColumn<Paradas, Integer> colIdParada = new TableColumn<>("ID");
+      colIdParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
+      colIdParada.setPrefWidth(80);
+
+      TableColumn<Paradas, String> colNombreParada = new TableColumn<>("Nombre");
+      colNombreParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("nombre"));
+      colNombreParada.setPrefWidth(180);
+
+      TableColumn<Paradas, String> colLocalizacionParada = new TableColumn<>("Localización");
+      colLocalizacionParada.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("localizacion"));
+      colLocalizacionParada.setPrefWidth(220);
+
+      tablaParadas.getColumns().addAll(colIdParada, colNombreParada, colLocalizacionParada);
+
+      Label lblRutas = new Label("Rutas");
+      lblRutas.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0F1C3F;");
+
+      TableView<Rutas> tablaRutas = new TableView<>();
+      tablaRutas.setItems(listaRutas);
+      tablaRutas.setPrefHeight(250);
+
+      TableColumn<Rutas, String> colOrigen = new TableColumn<>("Origen");
+      colOrigen.setCellValueFactory(cellData ->
+              new javafx.beans.property.SimpleStringProperty(
+                      cellData.getValue().getOrigen().getNombre()
+              ));
+      colOrigen.setPrefWidth(150);
+
+      TableColumn<Rutas, String> colDestino = new TableColumn<>("Destino");
+      colDestino.setCellValueFactory(cellData ->
+              new javafx.beans.property.SimpleStringProperty(
+                      cellData.getValue().getDestino().getNombre()
+              ));
+      colDestino.setPrefWidth(150);
+
+      TableColumn<Rutas, Double> colTiempo = new TableColumn<>("Tiempo");
+      colTiempo.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("tiempo"));
+      colTiempo.setPrefWidth(100);
+
+      TableColumn<Rutas, Double> colDistancia = new TableColumn<>("Distancia");
+      colDistancia.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("distancia"));
+      colDistancia.setPrefWidth(100);
+
+      TableColumn<Rutas, Double> colCosto = new TableColumn<>("Costo");
+      colCosto.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("costo"));
+      colCosto.setPrefWidth(100);
+
+      TableColumn<Rutas, Integer> colTransbordos = new TableColumn<>("Transbordos");
+      colTransbordos.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("transbordo"));
+      colTransbordos.setPrefWidth(120);
+
+      tablaRutas.getColumns().addAll(
+              colOrigen, colDestino, colTiempo, colDistancia, colCosto, colTransbordos
+      );
+
+      Button btnCerrar = new Button("Cerrar");
+      btnCerrar.setStyle("-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 30;");
+      btnCerrar.setOnAction(e -> ventana.close());
+
+      HBox cajaBoton = new HBox(btnCerrar);
+      cajaBoton.setAlignment(Pos.CENTER);
+
+      root.getChildren().addAll(
+              titulo,
+              lblParadas,
+              tablaParadas,
+              lblRutas,
+              tablaRutas,
+              cajaBoton
+      );
+
+      Scene scene = new Scene(root, 820, 650);
+      ventana.setScene(scene);
+      ventana.show();
+   }
+
    private void mostrarVentanaEliminarParada() {
       Stage ventana = new Stage();
       ventana.setTitle("Eliminar Parada");
@@ -555,7 +639,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con ComboBoxes para seleccionar origen y destino y eliminar una ruta
    private void mostrarVentanaEliminarRuta() {
       Stage ventana = new Stage();
       ventana.setTitle("Eliminar Ruta");
@@ -621,7 +704,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con ComboBox para seleccionar parada y campos para modificar nombre y localización
    private void mostrarVentanaModificarParada() {
       Stage ventana = new Stage();
       ventana.setTitle("Modificar Parada");
@@ -686,7 +768,6 @@ public class MainController {
       ventana.show();
    }
 
-   //Ventana con ComboBoxes para seleccionar ruta y campos para modificar
    private void mostrarVentanaModificarRuta() {
       Stage ventana = new Stage();
       ventana.setTitle("Modificar Ruta");
