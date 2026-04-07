@@ -63,6 +63,8 @@
                        style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" />
                 <ComboBox fx:id="comboDestino" prefWidth="260"/>
 
+                <ComboBox fx:id="comboAlgoritmo" prefWidth="180.0" promptText="Algoritmo" />
+
                 <Label text="Criterio"
                        style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" />
                 <ComboBox fx:id="comboCriterio" prefWidth="260"/>
