@@ -421,14 +421,16 @@ public class MainController {
       alert.showAndWait();
    }
    
-   @FXML
-   private void rutas() {
-      mostrarVentanaRutas();
-   }
-   
-   @FXML
-   private void paradas() {
-      mostrarVentanaParadas();
+   private RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
+      switch (algoritmo) {
+         case BELLMAN_FORD:
+            return algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
+         case FLOYD_WARSHALL:
+            return algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
+         case DIJKSTRA:
+         default:
+            return algoritmos.calcularMejorRuta(origen, destino, criterio);
+      }
    }
    
    @FXML
@@ -448,24 +450,13 @@ public class MainController {
          return;
       }
       
-      RutaResultado resultado;
-      
-      switch (algoritmo) {
-         case BELLMAN_FORD:
-            resultado = algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
-            break;
-         case FLOYD_WARSHALL:
-            resultado = algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
-            break;
-         case DIJKSTRA:
-         default:
-            resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
-            break;
-      }
+      RutaResultado resultado = calcularSegunAlgoritmo(origen, destino, criterio, algoritmo);
       
       if (!resultado.isExitoso()) {
          ultimaRutaResultado = null;
          areaResultado.setText(resultado.getMensaje());
+         
+         limpiarEstilosGrafo();
          
          if (leyendaRutas != null) {
             leyendaRutas.setVisible(false);
@@ -481,7 +472,56 @@ public class MainController {
                       resultado.obtenerResumen()
       );
       
+      limpiarEstilosGrafo();
+      resaltarRuta(resultado.getRutaParadas());
+      resaltarOrigenDestino(origen, destino);
+      
+      if (leyendaRutas != null) {
+         leyendaRutas.setVisible(false);
+         leyendaRutas.setManaged(false);
+      }
+   }
+   
+   @FXML
+   private void verRutasAlternativas() {
+      Paradas origen = comboOrigen.getValue();
+      Paradas destino = comboDestino.getValue();
+      CriterioRuta criterio = comboCriterio.getValue();
+      AlgoritmoRuta algoritmo = comboAlgoritmo.getValue();
+      
+      if (origen == null || destino == null || criterio == null || algoritmo == null) {
+         areaResultado.setText("Debes seleccionar origen, destino, criterio y algoritmo.");
+         return;
+      }
+      
+      if (origen.equals(destino)) {
+         areaResultado.setText("El origen y el destino no pueden ser la misma parada.");
+         return;
+      }
+      
+      RutaResultado principal = calcularSegunAlgoritmo(origen, destino, criterio, algoritmo);
+      if (!principal.isExitoso()) {
+         areaResultado.setText(principal.getMensaje());
+         
+         if (leyendaRutas != null) {
+            leyendaRutas.setVisible(false);
+            leyendaRutas.setManaged(false);
+         }
+         return;
+      }
+      
+      ultimaRutaResultado = principal;
+      
       mostrarRutasAlternativasEnMapa(origen, destino, criterio, algoritmo);
+      
+      areaResultado.setText(
+              "Algoritmo usado: " + algoritmo + "\n" +
+                      "Criterio principal: " + criterio + "\n\n" +
+                      "=== RUTA PRINCIPAL ===\n\n" +
+                      principal.obtenerResumen() +
+                      "\n\n=== RUTAS ALTERNATIVAS ===\n\n" +
+                      obtenerRutasAlternativas(origen, destino, algoritmo)
+      );
       
       if (leyendaRutas != null) {
          leyendaRutas.setVisible(true);
@@ -525,18 +565,6 @@ public class MainController {
       }
    }
    
-   private RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
-      switch (algoritmo) {
-         case BELLMAN_FORD:
-            return algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
-         case FLOYD_WARSHALL:
-            return algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
-         case DIJKSTRA:
-         default:
-            return algoritmos.calcularMejorRuta(origen, destino, criterio);
-      }
-   }
-   
    private void mostrarRutasAlternativasEnMapa(Paradas origen, Paradas destino, CriterioRuta criterioPrincipal, AlgoritmoRuta algoritmo) {
       limpiarEstilosGrafo();
       
@@ -574,15 +602,7 @@ public class MainController {
          return;
       }
       
-      for (Paradas p : sistema.getGrafo().keySet()) {
-         graphView.getStylableVertex(p).setStyleClass("vertex");
-      }
-      
-      for (Paradas origen : sistema.getGrafo().keySet()) {
-         for (Rutas r : sistema.getGrafo().get(origen)) {
-            graphView.getStylableEdge(r).setStyleClass("edge");
-         }
-      }
+      limpiarEstilosGrafo();
       
       for (Paradas p : camino) {
          graphView.getStylableVertex(p).setStyleClass("myVertex");
@@ -623,20 +643,7 @@ public class MainController {
       };
       
       for (CriterioRuta criterioAlt : criterios) {
-         RutaResultado resultadoAlt;
-         
-         switch (algoritmo) {
-            case BELLMAN_FORD:
-               resultadoAlt = algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterioAlt);
-               break;
-            case FLOYD_WARSHALL:
-               resultadoAlt = algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterioAlt);
-               break;
-            case DIJKSTRA:
-            default:
-               resultadoAlt = algoritmos.calcularMejorRuta(origen, destino, criterioAlt);
-               break;
-         }
+         RutaResultado resultadoAlt = calcularSegunAlgoritmo(origen, destino, criterioAlt, algoritmo);
          
          sb.append("=== Ruta por ").append(criterioAlt).append(" ===\n");
          
@@ -648,6 +655,16 @@ public class MainController {
       }
       
       return sb.toString();
+   }
+   
+   @FXML
+   private void rutas() {
+      mostrarVentanaRutas();
+   }
+   
+   @FXML
+   private void paradas() {
+      mostrarVentanaParadas();
    }
    
    private void mostrarVentanaRutas() {

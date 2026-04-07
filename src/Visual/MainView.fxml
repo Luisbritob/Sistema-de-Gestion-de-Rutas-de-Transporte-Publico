@@ -6,7 +6,6 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="Visual.MainController">
 
-    <!-- 🔝 BARRA SUPERIOR -->
     <top>
         <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10; -fx-background-color: #DDE3EA;">
 
@@ -20,7 +19,10 @@
                     onAction="#buscarRuta"
                     style="-fx-background-color: #0F1C3F; -fx-text-fill: white; -fx-font-weight: bold;"/>
 
-            <!-- 🔥 BOTÓN NUEVO -->
+            <Button text="Ver rutas alternativas"
+                    onAction="#verRutasAlternativas"
+                    style="-fx-background-color: #6A1B9A; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
             <Button text="Agregar parada"
                     onAction="#agregarParada"
                     style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold;"/>
@@ -28,7 +30,6 @@
         </HBox>
     </top>
 
-    <!-- 🗺️ MAPA -->
     <center>
         <StackPane fx:id="contenedorMapa"
                    minHeight="450"
@@ -36,7 +37,6 @@
                    style="-fx-background-color: #E3F2FD;"/>
     </center>
 
-    <!-- 📊 RESULTADOS -->
     <bottom>
         <VBox spacing="10" style="-fx-padding: 10;">
 
@@ -44,7 +44,6 @@
                       prefHeight="140"
                       wrapText="true"/>
 
-            <!-- Leyenda de rutas -->
             <HBox fx:id="leyendaRutas" spacing="15" alignment="CENTER">
                 <Label text="Ruta principal" style="-fx-text-fill: blue;"/>
                 <Label text="Tiempo" style="-fx-text-fill: green;"/>
