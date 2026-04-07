@@ -2,12 +2,12 @@ package Logico;
 
 import java.util.Objects;
 
-//Representa una parada con su distancia acumulada.
 public class ParadaDistancia implements Comparable<ParadaDistancia> {
 
     private final Paradas parada;
     private final double distancia;
 
+    //Representa una parada con su distancia acumulada.
     public ParadaDistancia(Paradas parada, double distancia) {
         this.parada = Objects.requireNonNull(parada, "La parada no puede ser null");
         this.distancia = distancia;

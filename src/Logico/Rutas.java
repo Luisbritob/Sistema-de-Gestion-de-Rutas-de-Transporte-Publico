@@ -63,7 +63,6 @@ public class Rutas {
          case DISTANCIA -> distancia;
          case COSTO -> costo;
          case TRANSBORDO -> transbordo;
-         default -> tiempo;
       };
    }
 }
