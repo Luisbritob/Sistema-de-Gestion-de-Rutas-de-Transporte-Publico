@@ -32,6 +32,9 @@ public class MainController {
    
    @FXML
    private ComboBox<CriterioRuta> comboCriterio;
+
+   @FXML
+   private ComboBox<AlgoritmoRuta> comboAlgoritmo;
    
    @FXML
    private TextArea areaResultado;
@@ -48,18 +51,21 @@ public class MainController {
    
    private Digraph<Paradas, Rutas> digraph;
    private SmartGraphPanel<Paradas, Rutas> graphView;
-   
+
    @FXML
    public void initialize() {
       listaParadas.setAll(sistema.getGrafo().keySet());
       actualizarListaRutas();
       actualizarCombos();
-      
+
       comboCriterio.setItems(FXCollections.observableArrayList(CriterioRuta.values()));
       comboCriterio.setValue(CriterioRuta.TIEMPO);
-      
-      areaResultado.setText("Selecciona un origen, destino y criterio para buscar la mejor ruta.");
-      
+
+      comboAlgoritmo.setItems(FXCollections.observableArrayList(AlgoritmoRuta.values()));
+      comboAlgoritmo.setValue(AlgoritmoRuta.DIJKSTRA);
+
+      areaResultado.setText("Selecciona origen, destino, criterio y algoritmo para buscar la mejor ruta.");
+
       inicializarSmartGraph();
    }
    
@@ -133,34 +139,48 @@ public class MainController {
    private void paradas() {
       mostrarVentanaParadas();
    }
-   
+
    @FXML
    private void buscarRuta() {
       Paradas origen = comboOrigen.getValue();
       Paradas destino = comboDestino.getValue();
       CriterioRuta criterio = comboCriterio.getValue();
-      
-      if (origen == null || destino == null || criterio == null) {
-         areaResultado.setText("Debes seleccionar origen, destino y criterio.");
+      AlgoritmoRuta algoritmo = comboAlgoritmo.getValue();
+
+      if (origen == null || destino == null || criterio == null || algoritmo == null) {
+         areaResultado.setText("Debes seleccionar origen, destino, criterio y algoritmo.");
          return;
       }
-      
+
       if (origen.equals(destino)) {
          areaResultado.setText("El origen y el destino no pueden ser la misma parada.");
          return;
       }
-      
-      AlgoritmosGrafos.RutaResultado resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
-      
+
+      AlgoritmosGrafos.RutaResultado resultado;
+
+      switch (algoritmo) {
+         case BELLMAN_FORD:
+            resultado = algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
+            break;
+         case FLOYD_WARSHALL:
+            resultado = algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
+            break;
+         case DIJKSTRA:
+         default:
+            resultado = algoritmos.calcularMejorRuta(origen, destino, criterio);
+            break;
+      }
+
       if (!resultado.isExitoso()) {
          ultimaRutaResultado = null;
          areaResultado.setText(resultado.getMensaje());
          return;
       }
-      
+
       ultimaRutaResultado = resultado;
-      areaResultado.setText(resultado.obtenerResumen());
-      
+      areaResultado.setText("Algoritmo usado: " + algoritmo + "\n\n" + resultado.obtenerResumen());
+
       resaltarRuta(resultado.getRutaParadas());
    }
    
