@@ -571,15 +571,11 @@ public class MainController {
    
    /**
     * Calcula una ruta según el algoritmo seleccionado por el usuario.
-    * Encapsula la lógica de selección del algoritmo para evitar repetir
-    * condicionales en otros métodos del controlador.
     */
    private RutaResultado calcularSegunAlgoritmo(Paradas origen, Paradas destino, CriterioRuta criterio, AlgoritmoRuta algoritmo) {
       switch (algoritmo) {
-         case BELLMAN_FORD:
-            return algoritmos.calcularMejorRutaBellmanFord(origen, destino, criterio);
-         case FLOYD_WARSHALL:
-            return algoritmos.calcularMejorRutaFloydWarshall(origen, destino, criterio);
+         case BELLMAN_FORD: //TO-DO FALTA POR IMPLEMENTAR
+         case FLOYD_WARSHALL: //TO-DO FALTA POR IMPLEMENTAR
          case DIJKSTRA:
          default:
             return algoritmos.calcularMejorRuta(origen, destino, criterio);
