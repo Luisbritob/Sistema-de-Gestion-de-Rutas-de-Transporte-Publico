@@ -1,0 +1,180 @@
+INFORME TÉCNICO - ANÁLISIS DE COMPLEJIDAD
+SISTEMA DE RUTAS ÓPTIMAS (ROUTEFINDER)
+
+
+1. OPERACIONES SOBRE LA ESTRUCTURA DEL GRAFO
+
+Estructura utilizada: Map<Paradas, List<Rutas>>
+- |V| = número de paradas
+- |E| = número de rutas
+
+
+1.a. Inserción de una parada
+
+Código:
+    if (grafo.containsKey(parada)) return;
+    grafo.put(parada, new ArrayList<>());
+
+Complejidad Temporal: O(1) - constante
+
+Explicación:
+    La operación containsKey() y put() de HashMap tienen complejidad O(1)
+    en promedio. No depende del número de paradas ni de rutas existentes.
+    Simplemente se añade una entrada nueva al mapa.
+
+Complejidad Espacial: O(1) - constante
+
+Explicación:
+    Se añade una entrada en el HashMap (una clave y una referencia a un
+    ArrayList vacío). El espacio no crece en función de |V| o |E| para
+    esta operación específica.
+
+
+1.b. Inserción de una ruta
+
+Código:
+    for (Rutas r : grafo.get(origen)) {
+        if (r.getDestino().equals(destino)) return;
+    }
+    grafo.get(origen).add(nuevaRuta);
+
+Complejidad Temporal: O(grado(origen)) = O(|V|) en el peor caso
+
+Explicación:
+    Primero se recorre la lista de rutas de la parada origen para verificar
+    si ya existe una ruta al destino. En el peor caso, cuando la parada
+    origen se conecta con todas las demás paradas del grafo, la lista
+    contiene |V|-1 elementos. Por lo tanto, la complejidad es O(|V|).
+    En un grafo disperso típico, el grado es constante, dando O(1) promedio.
+
+Complejidad Espacial: O(1) - constante
+
+Explicación:
+    Solo se añade un nuevo objeto Rutas a la lista de adyacencia existente.
+    No se requiere espacio adicional proporcional a |V| o |E|.
+
+
+1.c. Eliminación de una ruta
+
+Código:
+    List<Rutas> rutas = grafo.get(origen);
+    rutas.removeIf(r -> r.getDestino().equals(destino));
+
+Complejidad Temporal: O(grado(origen)) = O(|V|) en el peor caso
+
+Explicación:
+    removeIf() recorre la lista de rutas de la parada origen hasta encontrar
+    y eliminar la ruta con el destino especificado. En el peor caso, recorre
+    toda la lista de tamaño grado(origen). El grado máximo puede ser |V|-1,
+    resultando en O(|V|).
+
+Complejidad Espacial: O(1) - constante
+
+Explicación:
+    No se requiere espacio adicional para esta operación. Solo se modifica
+    la lista existente.
+
+
+1.d. Consulta de vecinos de una parada
+
+Código:
+    List<Rutas> rutas = grafo.get(paradaActual);
+
+Complejidad Temporal: O(1) - constante
+
+Explicación:
+    La operación get() de HashMap tiene complejidad O(1) promedio.
+    Independientemente del tamaño del grafo, acceder a la lista de rutas
+    de una parada toma tiempo constante.
+
+Complejidad Espacial: O(1)
+
+Explicación:
+    La operación no crea nuevas estructuras de datos ni reserva memoria adicional.
+    El método simplemente retorna una referencia a la lista de rutas ya existente
+    en el grafo. Por lo tanto, el espacio utilizado durante la ejecución es constante.
+
+    Aunque la lista de vecinos ocupa O(grado(origen)) espacio en memoria,
+    dicho espacio ya estaba previamente asignado y no forma parte del costo
+    de la operación en sí.
+
+
+1.e. Verificación de existencia de una arista
+
+Código:
+    List<Rutas> rutas = sistema.getGrafo().get(origen);
+    for (Rutas r : rutas) {
+        if (r.getDestino().equals(destino)) return r;
+    }
+
+Complejidad Temporal: O(grado(origen)) = O(|V|) en el peor caso
+
+Explicación:
+    Se obtiene la lista de adyacencia del origen (O(1)) y se recorre
+    secuencialmente hasta encontrar el destino. En el peor caso, cuando
+    la ruta no existe o es la última de la lista, se recorren todos los
+    vecinos del origen. El grado máximo es |V|-1.
+
+Complejidad Espacial: O(1) - constante
+
+Explicación:
+    No se requiere espacio adicional. Solo se usan variables locales que
+    no dependen del tamaño del grafo.
+
+
+2. ALGORITMOS IMPLEMENTADOS
+
+2.b. Dijkstra
+
+Código relevante:
+    PriorityQueue<ParadaDistancia> cola = new PriorityQueue<>();
+    while (!cola.isEmpty()) {
+        ParadaDistancia actual = cola.poll();
+        for (Rutas ruta : grafo.get(paradaActual)) {
+            double nuevaDistancia = distancias.get(paradaActual) + peso;
+            if (nuevaDistancia < distancias.get(vecino)) {
+                distancias.put(vecino, nuevaDistancia);
+                cola.add(new ParadaDistancia(vecino, nuevaDistancia));
+            }
+        }
+    }
+
+Complejidad Temporal: O((|V| + |E|) log |V|)
+
+Explicación:
+    Cada vértice puede ser insertado en la cola de prioridad múltiples veces
+    (cada vez que se encuentra una distancia menor). En el peor caso, cada
+    arista causa una inserción, resultando en O(|E|) inserciones en total.
+    Cada inserción y extracción (poll) en PriorityQueue cuesta O(log |V|)
+    porque internamente es un heap binario. Sumando las operaciones de
+    inserción (|E|) y extracción (|V|), la complejidad es O((|V|+|E|) log |V|).
+
+Complejidad Espacial: O(|V| + |E|)
+
+Explicación:
+Se utilizan estructuras como mapas para almacenar distancias y predecesores (O(|V|)).
+La cola de prioridad puede contener múltiples inserciones, llegando hasta O(|E|) en el peor caso.
+Por lo tanto, el espacio total es O(|V| + |E|).
+
+
+================================================================================
+3. TABLA RESUMEN DE COMPLEJIDADES
+================================================================================
+
+Operación/Algoritmo               | Complejidad Temporal | Complejidad Espacial
+----------------------------------|----------------------|---------------------
+Inserción de parada               | O(1)                 | O(1)
+Inserción de ruta                 | O(|V|)               | O(1)
+Eliminación de ruta               | O(|V|)               | O(1)
+Consulta de vecinos               | O(1)                 | O(1)
+Verificación de arista            | O(|V|)               | O(1)
+----------------------------------|----------------------|---------------------
+Dijkstra                          | O((|V|+|E|) log|V|)  | O(|V|)
+Bellman-Ford                      | O(|V|·|E|)           | O(|V|)
+Floyd-Warshall                    | O(|V|³)              | O(|V|²)
+----------------------------------|----------------------|---------------------
+
+## CONCLUSIÓN
+
+El sistema utiliza una representación eficiente basada en listas de adyacencia, lo que permite operaciones rápidas en grafos dispersos.
+Los algoritmos implementados ofrecen diferentes enfoques dependiendo del tipo de grafo y criterio de optimización, permitiendo flexibilidad y eficiencia en el cálculo de rutas óptimas.
