@@ -7,7 +7,7 @@ import javafx.stage.Stage;
 
 public class Mainfx extends Application {
    
-   //Carga el archivo FXML MainView.fxml, y lO muestra
+   //Carga el archivo FXML MainView.fxml, y lo muestra
    @Override
    public void start(Stage stage) throws Exception {
       FXMLLoader loader = new FXMLLoader(getClass().getResource("/Visual/MainView.fxml"));

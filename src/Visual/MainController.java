@@ -231,6 +231,15 @@ public class MainController {
       ventana.show();
    }
    
+   /**
+    * Muestra una ventana para modificar una ruta existente desde una parada de origen fija.
+    * Permite al usuario seleccionar la parada destino e introducir nuevos valores
+    * de tiempo, distancia, costo y transbordos. Antes de aplicar los cambios,
+    * valida que el destino sea válido, que no coincida con el origen, que los
+    * datos ingresados sean numericos y que no sean negativos. Si la modificación
+    * es correcta, actualiza la ruta en el sistema lógico, refresca la visualización
+    * del grafo sin reconstruirlo completamente y notifica al usuario el resultado.
+    */
    private void mostrarVentanaModificarRuta(Paradas origenFijo) {
       Stage ventana = new Stage();
       ventana.setTitle("Modificar Ruta");
